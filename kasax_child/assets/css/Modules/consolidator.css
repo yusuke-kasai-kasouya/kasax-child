@@ -1,0 +1,40 @@
+@charset "utf-8";
+/*
+    assets\css\Modules\consolidator.css
+*/
+
+
+/* レイアウト構造（PHPのstyle属性と干渉しない部分） */
+.kx-consolidated-link {
+    display: flex;
+    justify-content: flex-end; /* 右寄せ */
+    /*margin: 0px 0 1.7em 0;*/    /* 本文との上下間隔 */
+    height: 15px;
+    opacity:0.75;
+}
+
+.kx-consolidated-link a {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 2px 1px 25px;
+    border-radius: 0px 0px 0px 50px / 0px 0px 0px 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease; /* ホバー時の滑らかな動き */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* ホバー時の挙動（お好みで） */
+.kx-consolidated-link a:hover {
+    display: inline-flex;
+    opacity: 0.8;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    height: 15px;
+}
+
+.kx-consolidated-link .icon {
+    margin-right: 8px;
+    font-size: 1.1em;
+}

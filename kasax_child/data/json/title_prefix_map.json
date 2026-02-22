@@ -1,0 +1,50 @@
+{
+    "_config": {
+        "comment": "ColorManager用の装飾定義マスタ",
+        "priority": ["prefix", "work_id", "default"],
+        "default": {
+            "name": "未分類",
+            "memo": "未"
+        }
+    },
+
+    "prefixes": {
+        "κ": { "name": "計画"  , "memo": "ops:Planning" },
+        "λ": { "name": "SYSTEM", "memo": "Sys" },
+        "Μ": { "name": "理論"  , "memo": "ana:Theory" },
+        "Β": { "name": "教訓"  , "memo": "raw:Lessons" },
+        "γ": { "name": "感性"  , "memo": "raw:Sensitivity" },
+        "σ": { "name": "研究"  , "memo": "raw:Research" },
+        "δ": { "name": "資料"  , "memo": "raw:Documentation" },
+        "∮": { "name": "Idea"  , "memo": "ops:Idea" },
+        "∫": { "name": "制作"  , "memo": "ops:Execution",
+            "children": {
+                "M": { "name": "サンプリング", "memo": "Sampling" },
+                "T": { "name": "試作（参考）", "memo": "Reference Prototype" },
+                "S": { "name": "制作", "memo": "Production" },
+                "Y": { "name": "試作", "memo": "Prototyping" },
+                "X": { "name": "実験作", "memo": "Experimental Model" }
+            }
+        },
+        "∬01": {
+            "name": "Momotarō",
+            "memo": "∬1"
+        },
+        "xxx": {
+            "name": "xxx",
+            "memo": "xxx"
+        }
+    },
+    "contextual_definitions" :{
+        "∫,∮":{
+            "T,M":{
+                "001" :  "title"
+            },
+            "Y,S":{
+                "0000" :"title",
+                "9999" :"----"
+            }
+        }
+
+    }
+}

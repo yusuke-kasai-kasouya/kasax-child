@@ -1,0 +1,326 @@
+@charset "utf-8";
+/**
+	基本要素
+	非共通要素
+*/
+
+
+p {
+	line-height: 150%;
+	word-break:break-all;
+	margin : 0px 5px 5px 20px;
+	max-width:60em;
+	white-space:normal;/*改行する*/
+	/*line-height: 1.8; /* 適度な余白を確保 */
+}
+
+pre {
+		margin : 0px 5px 5px 30px;
+    padding: 8px; /* 内側の余白 */
+		border-radius: 10px;
+		white-space: pre-wrap; /* 長いコードを折り返す */
+}
+
+
+ul p,ol p {
+  margin: 0;
+}
+
+
+/* ..【ol 数字】*/
+
+
+
+ol,ul{
+	margin: 0 0 0 30px;
+}
+ul ul,ol ol
+{
+	margin-left: 1em;
+}
+
+
+/* .【ui・ol・li】 */
+.entry-content ul ,.entry-content  ol
+{
+	padding: 0em 0em 0.33em 0em;	/*必要。Wordpressに基礎設定がある。*/
+}
+
+/* ..【ui】
+ul{
+	margin: 0 0 20px 1.5em;
+}
+	*/
+
+
+
+ul li{
+	margin-top: 0px; /* 10px の余白を追加 */
+}
+
+
+.__kxol__ ul,.__kxol__ ol {
+	line-height: 160%;
+	padding: 0em 0em 0.33em 0em;	/*必要。Wordpressに基礎設定がある。*/
+	margin: 0 0 0 0;
+}
+
+.__kxol__ ul li li{
+		margin-left: 5px; /* 10px の余白を追加 */
+}
+
+.__kxol__ ul li{
+	margin-top: 0px; /* 10px の余白を追加 */
+}
+
+
+
+ul li:before {
+	/*content: '＊';*/ /* ←ここにリストマーカーにしたい文字列を設定 */
+	font-size:xx-small;
+	color:hsla(0,0%,90%,1);
+	margin-left:-10px; /* 3文字分、左に寄せる */
+}
+
+ul li li:before {
+	color:hsla(240,100%,85%,1);
+}
+
+ul li li li:before {
+	color:hsla(180,100%,85%,1);
+}
+
+ul li li li li:before {
+	color:hsla(90,100%,80%,1);
+}
+
+
+ol li li			{ margin: 0 0 0 0em;}
+ol li li li { margin: 0 0 0 0px;}
+ol li li li li { margin: 0 0 0 0px;}
+ol li li li li li { margin: 0 0 0 0px;}
+
+
+ol li li { list-style-type: circle; }
+ol li li li { list-style-type: square;}
+ol li li li li { list-style-type: circle; }
+ol li li li li li { list-style-type: disc;  }
+
+
+/* 3階層目以降 */
+
+li {	margin: 3px 0 0 0;}
+
+li.cat-item .children
+{
+	font-size: 10.5pt ;
+	padding-left: 0px !important;
+	margin-left: 1em !important;
+}
+
+
+
+
+h1
+{
+	position:relative;	/*z-indexとセット*/
+	z-index:1;
+	font-size: 18pt ;
+	font-weight: normal;
+	line-height: 110%;
+	margin : 5px 0em -15px 0em;
+	padding: 0 0 0 0;
+	border-bottom:  1px solid #999;
+	text-shadow: 2px 3px 2px rgba(0,0,0,0.2);
+	box-shadow: 2px 3px 2px rgba(0,0,100,0.2);
+}
+
+
+
+.entry-content h1{
+	position:static;	/*z-indexとセット*/
+	display:inline-block;
+	/*
+	color: hsl(300,100%,90%);
+	border: 1px solid hsla(300,100%,80%,.5);
+	*/
+	margin: 0px 0px 5px 0px;
+	padding: 5px 10px 5px 10px;
+
+	font-size: 22pt ;
+	font-weight: blod;
+	overflow:visible;
+	line-height: 110%;
+
+  border-radius: 10px; /* 角の丸みを調整 */
+
+}
+
+h2{
+	font-size: 18pt ;
+	font-weight: normal;
+	overflow:visible;
+	line-height: 110%;
+}
+
+h3{
+	font-size: 14pt ;
+	font-weight: blod;
+	line-height: 133%;
+}
+
+h4{
+	font-size: 12pt ;
+	font-weight: blod;
+	line-height: 105%;
+
+	border-right: 0px solid #fff;
+}
+
+h5,h6{
+	line-height: 133%;
+}
+
+h5{
+	font-size: 11pt ;
+	font-weight: bold;
+}
+
+h6{
+	font-size: 10.5pt ;
+	font-weight: normal;
+}
+
+h3:before {padding: 0 .25em 0 0;}
+h4:before,
+h5:before,
+h6:before {padding: 0 .5em 0 0;}
+
+h3:before {
+	opacity: .7;
+	font-size:12pt;
+	content:"◆";
+}
+
+h4:before {
+	opacity: .5;
+	font-size:10pt;
+	content:"▼";
+}
+
+h5:before {
+	opacity: .3;
+	font-size:8.5pt;
+	content:"□";
+}
+
+h6:before {
+	opacity: .2;
+	color:red;
+	font-size:	6pt;
+	content:		"✤";
+}
+
+/* 見出し・h。見出し>連番 */
+h2:after,h3:after,h4:after
+{
+	font-weight: normal;
+	font-size:small ;
+	color: hsla(0, 0%, 50%, 0.3);
+}
+
+/*
+body { counter-reset: h2; }
+h2{
+	counter-increment:h2;
+	counter-reset:h3;
+}
+*/
+
+.single h2:after {
+	content: " || ";  /*counter(h2)*/
+}
+h3 {
+	counter-increment: h3;
+	counter-reset: h4;
+}
+.single h3:after {
+
+	content:" ||| ";/* counter(h2) ". " counter(h3)*/
+}
+h4 {
+	counter-increment: h4;
+}
+.single h4:after {
+
+	content:" |||| ";/* counter(h2) ". " counter(h3) ". " counter(h4)*/
+	}
+
+/* ..【見出し】【h1～6】*/
+h1,h2,h3,h4,h5,h6{
+	word-wrap:break-all;
+	word-break:break-all;
+}
+
+/* 目隠しboxShadow */
+h2,h3,h4,h5,h6{
+	z-index:0;
+	-webkit-background-clip: text;
+	background-clip: text;
+	margin-top: 30px;
+	margin-bottom: 5px;
+	padding-left: 0.1em;
+
+}
+
+
+
+
+/* ...【連番無効化】 */
+/* ....search */
+.search h2:before,
+.search h3:before,
+.search h4:before,
+.search h5:before,
+.search h6:before,
+.search h2:after,
+.search h3:after,
+.search h4:after,
+.search h5:after,
+.search h6:after,
+/* ....archive*/
+.archive h2:before,
+.archive h3:before,
+.archive h4:before,
+.archive h5:before,
+.archive h6:before,
+.archive h2:after,
+.archive h3:after,
+.archive h4:after,
+.archive h5:after,
+.archive h6:after,
+/* ....連番無効化.page */
+.page h2:before,
+.page h3:before,
+.page h4:before,
+.page h5:before,
+.page h6:before,
+.page h2:after,
+.page h3:after,
+.page h4:after,
+.page h5:after,
+.page h6:after,
+/* ....連番無効化.widget */
+.widget-area .widget h2:after,
+.widget-area .widget h3:after,
+.widget-area .widget h4:after,
+.widget-area .widget h5:after,
+.widget-area .widget h6:after,
+.widget-area .widget h2:before,
+.widget-area .widget h3:before,
+.widget-area .widget h4:before,
+.widget-area .widget h5:before,
+.widget-area .widget h6:before{
+	content:"";
+}
+

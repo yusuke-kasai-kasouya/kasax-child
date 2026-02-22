@@ -1,0 +1,66 @@
+@charset "utf-8";
+/* .【基本要素】*/
+/*p {
+	line-height: 166%;
+	word-break:break-all;
+	margin : 0px 5px 0px 20px;
+	/*width:40em;*/
+/*}*/
+
+
+body {
+	color: hsl(0,0%,85%);
+	background-color: hsl(0,0%,5%);
+
+}
+
+/* --- front-visual.css --- */
+
+/* 通常時のリンク色 */
+a {
+    color: #00e5ff; /* ネオンシアン */
+    text-decoration: none;
+    transition: all 0.3s ease; /* 変化を滑らかに */
+}
+
+/* ホバー時の挙動 */
+a:hover {
+    color: #c0f4ff; /* 少し明るくする */
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.8); /* シアンの光彩（グロー効果） */
+    /* scale(1.3)は管理画面を壊すので、ここで慎重に制御 */
+    transform: scale(1.01);
+    display: inline-block;
+}
+
+/* 訪問済みリンク（お好みで少し色味を落とす） */
+a:visited {
+    color: #939be7;
+}
+
+
+
+table.kx_list {
+	/*border: 2px #ff0000 solid;*/
+	line-height: 10px;
+	margin : 0px 0px 0px 0px;
+	padding: 0px 0em 0px 0em;
+	font-size:6px;
+}
+
+td.kx_list {
+	/*border: 2px #ffff00 solid;*/
+	line-height: 10px;
+	font-size:6px;
+	margin : 0px 0px 0px 0px;
+	padding: 0px 0em 0px 0em;
+	height: 10px;
+}
+
+
+
+
+
+
+
+
+

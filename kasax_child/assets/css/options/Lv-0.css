@@ -1,0 +1,291 @@
+@charset "utf-8";
+/* .【body】*/
+/* ._0系統専用*/
+
+
+/* .ウェジェットエリア　使っていない？
+/* ..サイドバーnormal用　class="side_normal"*/
+.widget-area .side_normal{
+	margin: 0em 0.5em 0em 0em;
+}
+.widget-area .side_normal a {display:inline;}
+.widget-area .side_normal a:link {display:inline;}
+.widget-area .side_normal a:visited {display:inline;}
+.widget-area .side_normal a:hover {display:inline;}
+.widget-area .side_normal a:active {display:inline;}
+
+/* ..サイドバーnormal、右用
+class="side_normal_r"
+*/
+.widget-area .side_normal_r{
+	text-align: right;
+	margin: 0em 0.5em 0em 1em;
+}
+/* .【各クラス】*/
+/* ..class="normal"*/
+.normal a {display:inline;}
+.normal a:link {display:inline;}
+.normal a:visited {display:inline;}
+.normal a:hover {display:inline;}
+.normal a:active {display:inline;}
+/* ..【サイドバー+順序】class="relative_side1"*/
+/* ...relative_side1*/
+.relative_side1{
+	text-align: right;
+	font-size: 11pt ;
+	font-weight: bold;
+	color:#AAA;
+	position:relative;
+	word-break: keep-all;
+	line-height: 180%;
+	background: #222;
+	margin-top: 0em;
+	margin-bottom: 0em;
+	border-top: 0px solid #292C51;
+	border-bottom: 0px double white;
+	padding-top: 0em;
+	padding-bottom: 0em;
+}
+
+.relative_side1 a:link {color: red;color:lightsteelblue;display:block;}
+.relative_side1 a:visited {color: red;color:aqua;display:block;}
+.relative_side1 a:hover {color:#eee;background:#AAA;display:block;}
+.relative_side1 a:active {color: purple;background: #333;display:block;}
+
+
+
+
+/* ...relative_side2
+
+*/
+
+
+.relative_side2{
+	font-size: 12pt ;
+	color: #DDD;
+	position:relative;
+	word-break: keep-all;
+	line-height: 180%;
+	background: #333;
+	margin-top: 0em;
+	margin-bottom: 0em;
+	border-top: 0px solid #292C51;
+	border-bottom: 0px double white;
+	padding-top: 0em;
+	padding-bottom: 0em;
+}
+
+.relative_side2:first-letter {
+font-weight: bold;
+color:red;
+}
+
+
+/* ...relative_side3
+
+*/
+
+
+.relative_side3{
+	position:relative;
+	word-break: keep-all;
+	font-size: 12pt ;
+	color: #DDD;
+	line-height: 180%;
+	background: #333;
+	margin-top: 0em;
+	margin-bottom: 0em;
+	border-top: 0px solid #292C51;
+	border-bottom: 2px double white;
+	padding-top: 0em;
+	padding-bottom: 0em;
+	padding-left: 0em;
+	text-indent: 0.15em
+}
+
+.relative_side3:first-letter {
+font-weight: bold;
+color:red;
+}
+
+
+
+.relative_side3 a:link		{color:lightsteelblue;				display:block;}
+.relative_side3 a:visited 	{color:lightsteelblue;				display:block;}
+.relative_side3 a:hover 	{color:#eee;background:#AAA;		display:block;}
+.relative_side3 a:active 	{color: purple;background: #333;	display:block;}
+
+/*
+#親要素にz-index: 0;を指定している場合
+<div style="position: relative; height: 200px; z-index: 0;" class="zindex">
+<p style="color: black; background: Pink; top: 40px; left: 340px; z-index: 3;">z-index : 3 ;</p>
+<p style="color: black; background: Moccasin; top: 80px; left: 180px; z-index: 1;">z-index : 1 ;</p>
+<p style="text-align:center; color: white; background: #999; width: 500px; height: 140px; top: 0; left: 0; opacity:0.6;">z-index指定なし</p>
+<p style="color: white; background: Turquoise; top: 60px; left: 260px; z-index: 2;">z-index : 2 ;</p>
+<p style="color: white; background: DeepSkyBlue; top: 120px; left: 20px; z-index: -1;">z-index : -1 ;</p>
+<p style="color: white; background: LightGreen; top: 100px; left: 100px; z-index: 0;">z-index : 0 ;</p>
+</div>
+*/
+
+
+/* ..archive*/
+/*class="content_php"*/
+.content_php{
+	font-size: 8pt ;
+	margin : 0em 100px 0em 15px;
+}
+
+.archive .hr003{
+	width: 100%;
+	border-bottom: 1px solid steelblue;
+	background-color: white;
+	margin : 0em 0px 0em 0px;
+	padding: 0 0 0 0;
+}
+
+
+
+
+.archive h3{
+	font-size: 11pt ;
+	font-weight: bold;
+	line-height: 105%;
+	word-wrap:break-all;
+	word-break:break-all;
+	background: #F5F5F5;
+	margin : 0em 100px -1.2em 15px;
+	padding: 0.2em 0em 0 3px;
+	border-bottom: 0px solid #292C51;
+
+}
+
+.archive hr{
+	margin : 0em 30px 0em 15px;
+}
+
+
+
+.archive p {
+	font-size: 10pt ;
+	line-height: 135%;
+	word-break:break-all;
+	margin : 0em 100px 0em 15px;
+}
+
+
+
+hr {
+	margin-top: 0.1.25em;
+	margin-bottom: 0.125em;
+	border-bottom: 2px dashed gray;
+	background-color: white;
+	height: 2px;
+}
+
+
+
+/* ..class="hr001"
+ウェジェットエリア
+*/
+
+
+.hr001 {
+width: 100%;
+border-bottom: 1px solid #ccc;
+background-color: #F8F8F8;
+}
+
+
+
+
+/* ..class="hr002" 2px
+<hr class="hr002">
+*/
+
+.hr002 {
+width: 99%;
+border-bottom: 2px solid steelblue;
+ background-color: white;
+}
+
+
+
+
+
+/* ..class="hr003" 1px
+<hr class=hr003>
+細い
+*/
+
+.hr003 {
+width: 99%;
+border-bottom: 1px solid steelblue;
+background-color: white;
+}
+
+
+/* ...class="hr0031" 1px 97%;
+<hr class=hr0031>
+細い
+*/
+
+.hr0031 {
+width: 97%;
+border-bottom: 1px solid steelblue;
+background-color: white;
+}
+
+
+
+/* .【投稿日・投稿者などを消す】
+*/
+
+.entry-utility,
+.entry-meta {
+display: none;
+}
+
+
+/* . 【「次の投稿」「前の投稿」を非表示】
+*/
+
+.nav-links {
+display: none;
+}
+/* .スクロールを消す
+*/
+.scroll-off {
+  overflow: hidden
+}
+
+/*
+<div class="scroll-off">
+hidden
+*/
+
+
+/* .注意クラス
+コピーされたときに注意すべき案件
+<div class="entry_title">
+*/
+
+.entry_title{
+	background-color:thistle;
+	line-height:150%;
+	margin: 0em 2em 0.5em 2em;
+	border:2px dotted darkgray;
+	padding: 0.1em 0.1em 0.1em 0.1em;
+}
+
+/* ..横バー消す
+横バー消す　
+　*/
+
+/* OFF
+.body{
+overflow-x: hidden;
+}
+.html{
+overflow-x: hidden;
+}
+*/

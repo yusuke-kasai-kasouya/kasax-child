@@ -1,0 +1,62 @@
+{
+    "db_settings": {
+        "host": "localhost",
+        "user": "***",
+        "password": "***",
+        "database": "***"
+    },
+    "ai_model_settings": {
+        "embedding_url": "http://localhost:1234/v1/embeddings",
+        "model_name": "nomic-embed-text-v1.5",
+        "timeout": 10,
+        "sleep_time": 0.1
+    },
+    "table_names": {
+        "master_index": "wp_kx_0",
+        "master_hierarchy": "wp_kx_1",
+        "ai_metadata": "wp_kx_ai_metadata",
+        "posts": "wp_posts",
+        "postmeta": "wp_postmeta"
+    },
+    "file_paths": {
+        "stop_words": "dictionary/stop_words.json",
+        "output": "ai_weights.json",
+        "weights": "models/global_term_weights.json"
+    },
+    "analysis_settings": {
+        "knowledge_prefixes": ["Μ", "Β", "γ", "σ", "δ"],
+        "max_process": null,
+        "force_update": false
+    },
+    "scoring_config": {
+        "content_evaluation": {
+            "length_divisor": 100.0,
+            "tag_density_threshold": 1.5,
+            "penalty_multiplier": 15.0
+        },
+        "structural_bonus": {
+            "tag": 20.0,
+            "consolidated_from": 20.0,
+            "overview_from": 20.0,
+            "ghost_from_unit": 5.0,
+            "ghost_from_max": 20.0,
+            "flags_present": 10.0
+        },
+        "stat_keyword_weight": {
+            "multiplier": 2.0
+        },
+        "length_limit_settings": {
+            "min_limit": 60,
+            "soft_limit": 5000,
+            "hard_limit": 10000
+        },
+        "integration_weights": {
+            "stat_weight": 0.1,
+            "context_weight": 1.5
+        },
+        "deviation_settings": {
+            "mean": 100.0,
+            "std_dev": 15.0
+        }
+    }
+}

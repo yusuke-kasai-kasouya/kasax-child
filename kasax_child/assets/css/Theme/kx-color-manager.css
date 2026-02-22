@@ -1,0 +1,10 @@
+@charset "utf-8";
+
+body {
+    background-color: hsla(
+        var(--kx-hue, 0),
+        var(--kx-sat, 0%),
+        var(--kx-lum, 100%),
+        1
+    );
+}

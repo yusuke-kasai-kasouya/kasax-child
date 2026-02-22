@@ -1,0 +1,9 @@
+{
+    "dir_root"       : "C:/path/to/your/wordpress",
+    "dir_csv_root"   : "C:/path/to/your/wordpress/csv",
+    "dir_backup_csv" : "C:/path/to/your/wordpress/csv_backup",
+    "dir_export_all" : "C:/path/to/your/wordpress/export",
+    "dir_E_seisaku"  : "C:/path/to/your/working_dir",
+    "json"           : "BASE_DIR/data/json",
+    "php"            : "BASE_DIR/data/php"
+}

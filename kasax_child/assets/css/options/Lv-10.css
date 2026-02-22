@@ -1,0 +1,172 @@
+@charset "utf-8";
+/* .■■II系統■■*/
+/* .移行memo
+	body	2
+	a系統		2
+/* .【Lv10変化形】*/
+/* ..Animation系*/
+
+a {	transition: all .1s;	/*ふわっと*/	}
+.__hidden_back{	transition: all 5s;	}
+
+
+
+h6.entry-title {
+	font-weight:normal;
+	font-size: 12pt ;
+	color: #000;
+	margin: 1em 0em -1.5em 0em;
+	padding: 0px 0px 0px 2em;
+	border-bottom: 0px;
+	line-height: 100%;
+}
+
+
+
+/* .archive*/
+/*class="content_php"*/
+.archive{
+	line-height: 100%;
+}
+.archive p{
+	margin: 0em 0em 0em 20px;
+	/* 他は、.entry-summary へ*/
+}
+.archive .hr002{
+	width: 100%;
+	border-bottom: 1px solid steelblue;
+	border-right: 0px solid steelblue;
+	background-color: white;
+	margin : 10px 0px 10px 0px;
+	padding: 0 0 0 0;
+}
+
+/*.archive h4{ h4.entry-title へ
+}*/
+
+.archive hr{
+	margin : 0em 30px 0em 15px;
+}
+.archive span.cat-links {
+	font-size:x-small;
+	line-height: 135%;
+	margin: 0em 0em 0em 0em;
+	word-break:break-all;
+}
+.archive span.edit-link {
+	text-align: right;
+	font-size:x-small;
+	line-height: 135%;
+	margin: 0em 0em 0em 1em;
+	word-break:break-all;
+}
+/* .【class】*/
+/*class="kasax_date"*/
+.kasax_date{
+	font-size: 7pt ;
+	margin : 2px 0 0px 0;
+	text-align: right;
+}
+/* ..【サイドバー+順序】class="relative_side1"*/
+/* ...relative_side1*/
+.relative_side1{
+	text-align: right;
+	font-size: 11pt ;
+	font-weight: bold;
+	color:#AAA;
+	position:relative;
+	word-break: keep-all;
+	line-height: 180%;
+	background: #222;
+	margin-top: 0em;
+	margin-bottom: 0em;
+	border-top: 0px solid #292C51;
+	border-bottom: 0px double white;
+	padding-top: 0em;
+	padding-bottom: 0em;
+}
+.relative_side1 a:link {color: red;color:lightsteelblue;display:block;}
+.relative_side1 a:visited {color: red;color:aqua;display:block;}
+.relative_side1 a:hover {color:#eee;background:#AAA;display:block;}
+.relative_side1 a:active {color: purple;background: #333;display:block;
+}
+/* ...relative_side2*/
+.relative_side2{
+	font-size: 12pt ;
+	color: #DDD;
+	position:relative;
+	word-break: keep-all;
+	line-height: 180%;
+	background: #333;
+	margin-top: 0em;
+	margin-bottom: 0em;
+	border-top: 0px solid #292C51;
+	border-bottom: 0px double white;
+	padding-top: 0em;
+	padding-bottom: 0em;
+}
+
+.relative_side2:first-letter {
+font-weight: bold;
+color:red;
+}
+/* ..class="side_normal"サイドバーnormal用*/
+.side_normal{
+	font-size: 9.5pt ;
+	line-height:150%;
+	margin: 0em 0.5em 0em 5px;
+	white-space:normal;
+}
+.widget-area .side_normal ul{
+	font-size: 9pt ;
+	margin: 0 0.5em 0em 5px;
+	white-space:normal;
+}
+/* ..class="side_norma_r"サイドバーnormal、右用*/
+.side_normal_r{
+	text-align: right;
+	margin: 0em 0.5em 0em 0em;
+}
+
+/* ..inline*/
+.inline{
+	text-align: left;
+	/*	font-size: 10.5pt ; */
+	line-height:150%;
+	/*	background-color:#F2F2F2;*/
+	margin:0em 0.1em 0.05em 10px;
+	border:0px solid darkgray;
+	padding:0em;
+}
+
+.inline a:link {display:inline;}
+.inline a:visited {display:inline;}
+.inline a:hover {display:inline;}
+.inline a:active {display:inline;
+}
+
+/* .【basu】*/
+
+
+a.edit171001 .edit171000{
+	color:#ccc;
+	text-align: left;
+	font-size:x-small;
+	margin: 0px 5px 0px 0px;
+}
+a.edit171001:hover .edit171000{
+	color:red;
+	background-color:#f8f8f8;
+}
+a.edit171001 .edit171002{
+    display: none;
+}
+a.edit171001:hover .edit171002{
+	color:#f8f8f8;
+	background-color:pink;
+	display:inline;
+	font-size: 10.5pt ;
+	margin: 0 10px 0 0px;
+}
+
+

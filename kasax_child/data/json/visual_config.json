@@ -1,0 +1,205 @@
+{
+    "comment": "ColorManager用の装飾定義マスタ",
+    "priority": ["prefix", "work_id", "default"],
+
+    "contexts": {
+        "body_default": {
+            "hue": 0,
+            "sat": "0%",
+            "lum": "5%"
+        },
+        "content_default": {
+            "hue": 0,
+            "sat": "0%",
+            "lum": "7.5%"
+        }
+    },
+
+    "prefix_patterns": {
+        "κ": { "hue": 0,   "tone": "midnight"},
+        "∫": { "hue": 170, "tone": "dusty"},
+        "∮": { "hue": 180, "tone": "deep"},
+        "∬": { "hue": 200, "tone": "midnight"},
+        "λ": { "hue": 90,  "tone": "primary"},
+        "Μ": { "hue": 30,  "tone": "deep"},
+        "Β": { "hue": 60,  "tone": "deep"},
+        "γ": { "hue": 300, "tone": "deep"},
+        "σ": { "hue": 180, "tone": "deep"},
+        "δ": { "hue": 120, "tone": "deep"}
+    },
+
+
+    "character_logic": {
+        "04": {
+            "001":{"hue": 190}
+        },
+        "default_work": {
+            "001":{"hue": 240},
+            "002":{"hue": 220},
+            "01": {"hue": 210},
+            "1":  {"hue": 330},
+            "2":  {"hue": 330},
+            "3":  {"hue": 300},
+            "4":  {"hue": 180},
+            "5":  {"hue": 45},
+            "6":  {"hue": 270},
+            "7":  {"hue": 60},
+            "8":  {"hue": 90},
+
+            "98" :{"hue": 30},
+            "991":{"hue": 330},
+            "993":{"hue": 300},
+            "994":{"hue": 180},
+            "996":{"hue": 270},
+            "998":{"hue": 90},
+
+            "999":{"hue": 0}
+        }
+    },
+
+
+    "context_parts_logic": [
+        {
+        "prefix": "∫",
+        "index": 1,
+        "match_type": "full",
+        "match": "T",
+        "update": { "tone": "pastel" }
+        },
+        {
+        "prefix": "∫",
+        "index": 1,
+        "match_type": "full",
+        "match": "M",
+        "update": { "tone": "pastel" }
+        },
+        {
+        "prefix": "∫",
+        "index": 1,
+        "match_type": "full",
+        "match": "X",
+        "update": { "tone": "deep" }
+        },
+        {
+        "prefix": "∫",
+        "index": 1,
+        "match_type": "full",
+        "match": "Y",
+        "update": { "hue": 190,"tone": "primary" }
+        },
+        {
+        "prefix": "∫",
+        "index": 1,
+        "match_type": "full",
+        "match": "登場人物",
+        "update": { "tone": "primary" }
+        },
+        {
+        "prefix": "∬",
+        "index": 2,
+        "match_type": "suffix",
+        "match": "Ygs",
+        "update": { "hue": 300,"tone": "vivid" }
+        },
+        {
+        "prefix": "∬",
+        "index": 2,
+        "match_type": "suffix",
+        "match": "Ksy",
+        "update": { "hue": 240,"tone": "vivid" }
+        },
+        {
+        "prefix": "∬",
+        "index": 2,
+        "match_type": "suffix",
+        "match": "Olf",
+        "update": { "hue": 270,"tone": "vivid" }
+        },
+        {
+        "prefix": "∬",
+        "index": 2,
+        "match_type": "prefix",
+        "match": "＼c",
+        "update": { "tone": "pale" }
+        },
+        {
+        "prefix": "δ",
+        "index": 1,
+        "match": "full完全一致",
+        "match_type": "full",
+        "update": { "tone": "pale" }
+        },
+        {
+        "prefix": "δ",
+        "index": 1,
+        "match": "suffix後方一致",
+        "match_type": "suffix",
+        "update": { "hue": 30, "tone": "vivid" }
+        },
+        {
+        "prefix": "δ",
+        "index": 1,
+        "match": "prefix前方一致",
+        "match_type": "prefix",
+        "update": { "hue": 180 }
+        }
+    ],
+
+
+    "global_word_logic": [
+        {
+        "match": "概要",
+        "match_type": "partial",
+        "update": { "tone": "smoky" }
+        },
+        {
+        "match": "TEMP",
+        "match_type": "prefix",
+        "update": { "hue": 0, "tone": "pale" }
+        }
+    ],
+
+    "type_styles": {
+        "kx30":{"base": "font-weight:bold; color:#111;text-shadow:hsla(var(--kx-hue),40%,70%,1) 1px 1px 2px,hsla(var(--kx-hue),40%,70%,1) -1px 1px 2px,hsla(var(--kx-hue),40%,70%,1) 1px -1px 2px,hsla(var(--kx-hue),40%,70%,1) -1px -1px 2px;"},
+        "card":{"base": "padding-left: 10px; border-left: 4px solid var(--kx-main-color);"},
+        "list_item":{"base": "padding-left: 10px; border-left: 4px solid var(--kx-main-color);"},
+
+        "default":{"base": ""}
+    },
+
+
+    "type_traits": {
+        "header":  {"base":"__a_white __font_weight500 __text_shadow_black1_01"},
+
+        "card":    {"base":"__border_radius_8 __shadow_soft"},
+        "list":    {"base":"__list_item_underlined"},
+        "search":  {"base":"__highlight_border"},
+
+        "default": {"base":"__a_white __font_weight500 __text_shadow_black1_01"}
+    },
+
+    "tones": {
+        "pastel":  { "sat": "60%", "lum": "75%" , "alp": "0.25", "txt_col": "#ffffff" },
+        "pale":    { "sat": "100%", "lum": "75%", "alp": "0.25", "txt_col": "#ffffff" },
+        "neon":    { "sat": "100%", "lum": "60%" , "alp": "0.25", "txt_col": "#ffffff" },
+        "vivid":   { "sat": "100%", "lum": "45%", "alp": "0.25", "txt_col": "#ffffff" },
+        "primary": { "sat": "100%", "lum": "33%", "alp": "0.25", "txt_col": "#ffffff" },
+        "deep":    { "sat": "100%", "lum": "20%", "alp": "0.25", "txt_col": "#ffffff" },
+        "midnight":{ "sat": "60%", "lum": "15%" , "alp": "0.25", "txt_col": "#ffffff" },
+        "dusty":   { "sat": "30%", "lum": "60%" , "alp": "0.25", "txt_col": "#ffffff" },
+        "smoky":  { "sat": "20%", "lum": "30%" , "alp": "0.25", "txt_col": "#ffffff" },
+        "default": { "sat": "50%",  "lum": "50%", "alp": "0.25", "txt_col": "#f5f0cb" }
+    },
+
+    "default": {
+        "hue": 0,
+        "tone": "default"
+    },
+
+    "default_character": {
+        "hue": 15,
+        "tone": "vivid"
+    }
+
+
+}

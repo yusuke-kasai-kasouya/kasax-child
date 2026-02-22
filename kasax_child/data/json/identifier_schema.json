@@ -1,0 +1,270 @@
+{
+    "system": {
+        "separator": "≫",
+        "encoding": "UTF-8"
+    },
+
+    "// 共通パーツの定義 //": "",
+    "common_prefixes": {
+        "work_a": ["sys"],
+        "work_b": ["sys"],
+        "shared": ["Β","γ","σ","δ"],
+        "logs"  : ["Logs","来歴"]
+    },
+
+    "detection": {
+        "// 優先度の高い（条件が厳しい）順に定義 //": "",
+
+
+        "// --- κ (計画) --- //": "",
+        "strat_sales": {
+            "0": "κ", "1": "販売戦略",
+            "node_sort_order": ["方針", "関連"]
+        },
+        "strat_char_root": {
+            "0": "κ", "1": "制作", "2": "登場人物",
+            "strict": true
+        },
+        "strat_production_root": {
+            "0": "κ", "1": "制作",
+            "strict": true
+        },
+        "strat_production_detail": {
+            "0": "κ", "1": "制作"
+        },
+        "strat_root": {
+            "0": "κ"
+        },
+
+
+        "// --- ∫ (試作・記録) --- //": "",
+        "plan_comprehensive": {
+            "0": "∫", "1": ["S","X","Y","T"]
+        },
+        "plan_root": {
+            "0": "∫"
+        },
+
+        "// --- ∮ (素材・共通題材) --- //": "",
+        "material_char_profile": {
+            "0": "∮", "1": "登場人物"
+        },
+        "material_root": {
+            "0": "∮"
+        },
+
+
+
+        "// --- ∬ --- //": "",
+        "prod_10_char": {
+            "0": "∬10", "1": "1構成", "2": "設定", "3": "登場人物"
+        },
+
+        "prod_work_production_log": {
+            "0": "∬",
+            "1": "c",
+            "2": "@work_a",
+            "3": "@logs",
+            "strict": true
+        },
+        "prod_work_production_logs": {
+            "0": "∬",
+            "1": "c",
+            "2": "@work_a",
+            "3": "@logs"
+        },
+        "prod_work_productions": {
+            "0": "∬",
+            "1": "c",
+            "2": "@work_a"
+        },
+
+        "prod_character_relation_log": {
+            "0": "∬",
+            "1": "c",
+            "2": "＼c",
+            "3": "@logs",
+            "strict": true
+        },
+        "prod_character_relation_logs": {
+            "0": "∬",
+            "1": "c",
+            "2": "＼c",
+            "3": "@logs"
+        },
+        "prod_character_relation": {
+            "0": "∬",
+            "1": "c",
+            "2": "＼c"
+        },
+
+        "prod_character_core_log": {
+            "0": "∬",
+            "1": "c",
+            "2": "@logs",
+            "strict": true
+        },
+        "prod_character_core_logs": {
+            "0": "∬",
+            "1": "c",
+            "2": "@logs"
+        },
+        "prod_char_plans": {
+            "0": "∬", "1": "c", "2": "@work_a"
+        },
+
+
+        "prod_common_structure": {
+            "0": "∬", "1": "0構成"
+        },
+
+        "prod_character_core": {
+            "0": "∬",
+            "1": "c"
+        },
+        "prod_root": {
+            "0": "∬"
+        },
+
+
+        "// --- λ (システム) --- //": "",
+        "sys_root": {
+            "0": "λ",
+            "node_sort_order": ["", ""]
+        },
+
+
+        "// --- Μ (理論) --- //": "",
+        "phil_root": {
+            "0": "Μ"
+        },
+
+        "// --- Β/γ/σ/δ (科学・芸術・作品アーカイブ) --- //": "",
+
+        "arc_shared_psychology_root": {
+            "0": "@shared", "1": "医学", "2": "心理学"
+        },
+
+        "arc_shared_history": {
+            "0": "@shared",
+            "1": "人文科学",
+            "2": "歴史学",
+            "3": "list",
+            "4": ""
+        },
+
+        "arc_shared_works_prim": {
+            "0": "@shared",
+            "1": "芸術・作品",
+            "2": "list",
+            "3": "",
+            "strict": true
+        },
+        "arc_shared_works_subs": {
+            "0": "@shared",
+            "1": "芸術・作品",
+            "2": "list",
+            "3": ""
+        },
+        "arc_shared_works_character_prim": {
+            "0": "@shared",
+            "1": "芸術・作品",
+            "2": "list",
+            "3": "",
+            "4": "登場人物",
+            "5": "",
+            "strict": true
+        },
+        "arc_shared_works_character_subs": {
+            "0": "@shared",
+            "1": "芸術・作品",
+            "2": "list",
+            "3": "",
+            "4": "登場人物",
+            "5": ""
+        },
+
+        "arc_shared_biography": {
+            "0": "@shared",
+            "1": ["人物"],
+            "2": "list",
+            "3": ""
+        },
+        "arc_shared_root": {
+            "0": "@shared"
+        },
+
+
+        "---[ TERMINATE_TYPE_DETECTION ]---":"これ以降はループされない",
+
+
+        "plan_prod_root": {
+            "0": "∫", "1": "S"
+        },
+
+        "plan_lab_root": {
+            "0": "∫", "1": "X"
+        },
+
+
+        "plan_proto_root": {
+            "0": "∫", "1": "Y"
+        },
+
+
+        "plan_rev_eng_root": {
+            "0": "∫", "1": "T"
+        },
+
+        "prod_10_root": {
+            "0": "∬10"
+        },
+
+
+
+        "// --- Β (教訓) --- //": "",
+        "lesson_root": {
+            "0": "Β",
+            "node_sort_order": ["", ""]
+        },
+
+
+        "// --- γ (感性) --- //": "",
+        "sentiment_root": {
+            "0": "γ",
+            "node_sort_order": ["", ""]
+        },
+
+
+        "// --- σ (研究) --- //": "",
+        "study_root": {
+            "0": "σ",
+            "node_sort_order": ["", ""]
+        },
+
+
+        "// --- δ (データ) --- //": "",
+        "data_root": {
+            "0": "δ",
+            "node_sort_order": ["", ""]
+        },
+
+        "// --- default --- //": "",
+        "default": {
+            "node_sort_order": ["", "その他,関連"]
+        },
+
+
+        "// --- xxx --- //": "",
+        "XXX_root": {
+        "0":"xxx"
+        }
+    },
+
+    "extraction_rules": {
+        "chara": {
+            "work_id": { "index": 0, "cut": 1 },
+            "chara_id": { "index": 1, "cut": 1 }
+        }
+    }
+}

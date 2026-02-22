@@ -1,0 +1,16 @@
+@charset "utf-8";
+/*	他は、php_cssへ	*/
+
+a:hover,
+.site-main a:hover{
+	transform:scale(1.005);
+}
+
+
+/* outline.php の <style> またはテーマのCSSに追加 */
+.kx-outline-anchor-target {
+    display: block;
+    position: relative;
+    /* トップバーの高さ（60px）+ 少しの余裕（10px） */
+    scroll-margin-top: 40px;
+}

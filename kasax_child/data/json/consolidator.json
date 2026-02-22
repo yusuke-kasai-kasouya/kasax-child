@@ -1,0 +1,67 @@
+{
+    "ai_model_specs": {
+        "gemini": {
+            "name": "Google_Gemini",
+            "max_length": 30000,
+            "chunk_overlap": 500,
+            "description": "Googleモデル"
+        },
+        "grok": {
+            "name": "X_Grok",
+            "max_length": 50000,
+            "chunk_overlap": 1000,
+            "description": "X(Twitter)社モデル"
+        },
+        "default": {
+            "max_length": 0,
+            "name": "分割無し"
+        }
+    },
+
+    "plit_header_template" : "未設定",
+
+    "priority_id_map":{
+        "1000": 10102,
+        "1001": "simple"
+        },
+
+    "context_type_map":{
+        "kappa_root": 10140,
+        "beta_root": 10134,
+        "study": 10140
+    },
+
+
+
+    "prompts" : {
+        "10101":{"name":"101：個別"},
+        "10102":{"name":"102：連続"},
+        "10103":{"name":"103：複雑"},
+        "10104":{"name":"104：--",
+            "split_templates": {
+                "final_4": "タスク4：--。\n",
+                "final_5": "タスク5：--。\n"
+            }
+        },
+        "10134":{"name":"134：--"},
+        "10140":{"name":"140：--"},
+        "default": {
+            "consolidated_templates":"--",
+            "split_templates": {
+                "first1": "タスク1：--\n",
+                "middle1": "タスク1：--\n",
+                "final_1": "タスク1：--\n",
+                "final_2": "タスク2：--\n",
+                "final_3": "タスク3：--\n",
+                "first_middle_Footer": "出力形式：\n・--\n"
+            }
+        }
+    },
+
+    "exclude_ids": [11111],
+
+    "important" :{
+        "1st" : [10],
+        "2nd" : [20]
+    }
+}

@@ -1,0 +1,228 @@
+@charset "utf-8";
+
+/*	白	*/
+.__a_white a,
+.__a_white a:link,
+.__a_white a:visited,
+.__a_white{
+	color:hsl(0,0%,85%);
+}
+
+.__kxol_side a:hover {
+  background-color: hsla(180,63%,20%,1);
+
+}
+
+.__title_tikan_white{
+	background-color:#555;
+
+	box-shadow:
+		2px 0px 2px hsla(0,0%,0%,0.4),
+		-2px 0px 2px hsla(0,0%,0%,0.4);
+}
+
+/*.hr_side,*/
+.__side_search,
+.__kx_search{
+	border-bottom: solid #444;
+}
+
+hr.hr_side{
+	border: none;
+	background-color: #444;
+	border-width: 1px 0 0 0;
+	border-top: solid;
+	border-color: black;
+
+}
+
+.answer.kx-sidebar{
+	background-color:hsla(0,0%,100%,.1);
+}
+
+input.__search{
+	background-color: #000;
+	color: #555;
+}
+
+input:hover.__search,
+input:focus.__search{
+	color: white;
+}
+
+
+input.__search_button{
+	background-color: hsl(0,0%,25%);
+	color: hsl(0,0%,50%);
+}
+
+
+input.__search,
+input.__search_button{
+	border: 0;
+
+}
+
+input[type="checkbox"]:not(:checked){
+	opacity:.2;
+}
+
+.__hidden_box input[type="checkbox"]:not(:checked){
+	opacity:1;
+}
+
+
+h2,
+h3,
+h4,
+h5,
+h6{
+	background: hsla(0,0%,100%,.02);
+	border-radius: 5px;
+}
+
+h2{
+	color:  hsla(270,100%,85%);
+}
+
+h3{
+	color: hsl( 210, 50%, 75%);
+}
+
+h4{
+	color: hsl( 150, 50%, 75%);
+}
+
+
+h5{
+	color:  hsla(90,50%,75%);
+}
+
+h6{
+	color:  hsla(35,50%,85%);
+}
+
+/*	青	*/
+.__a_blue a,
+.__a_blue a:link,
+.__a_blue a:visited,
+.__a_blue{
+	color:hsl(240,100%,75%);
+}
+
+.__a_150 a,
+.__a_150 a:link,
+.__a_150 a:visited,
+.__a_150{
+	color:hsl(150,100%,50%);
+}
+
+.__a_300 a,
+.__a_300 a:link,
+.__a_300 a:visited,
+.__a_300{
+	color:hsl(300,100%,50%);
+}
+
+.__kxol_box,
+body {
+	color: hsl(0,0%,85%);
+}
+
+
+/*	基本関係	*/
+/*body,*/
+.__kxol_box,
+::-webkit-scrollbar-track {
+	background-color: hsl(0,0%,5%);
+}
+
+::-webkit-scrollbar-thumb {
+	background: hsla(240,100%,80%,1);
+}
+
+
+
+a.__color_normal,
+a:link.__color_normal,
+.__color_normal a,
+.__color_normal a:link,
+.__color_normal{
+	color: hsl(0,0%,85%);
+}
+
+.__a_violet_kx a,
+.__a_violet_kx a:link,
+.__a_violet_kx a:visited,
+.__a_violet_kx{
+	color: hsla(300,100%,80%,1);
+}
+
+.__hidden_box .option-input01,
+.__hidden_box .option-input02,
+.__a_inversion a,
+.__a_inversion a:link,
+.__a_inversion a:visited,
+.__a_inversion,
+.__color_inversion a:link,
+.__color_inversion a,
+a.__color_inversion,
+a:link.__color_inversion,
+.__color_inversion{
+	color: #111;
+}
+
+
+.__text_shadow_normal{
+	text-shadow:
+	hsla(0,100%,100%,.25) 0px 0px 1px,
+	hsla(0,100%,100%,.25) 0px 0px 2px,
+	hsla(0,100%,100%,.25) 0px 0px 4px,
+	hsla(0,100%,100%,.25) 1px 1px 0px,
+	hsla(0,100%,100%,.25) -1px 1px 0px,
+	hsla(0,100%,100%,.25) 1px -1px 0px,
+	hsla(0,100%,100%,.25) -1px -1px 0px;
+}
+
+
+
+.__kakko_sumi{
+	color:			hsla(240,100%,75%,1);
+	font-weight:	bold;
+}
+
+
+.__background_normal,
+hr,
+hr._kx,
+.__hr_more,
+.content-area,
+.__navi_back_l2,
+.__error_main_red,
+.__error_main_blue,
+.__error_main_darkviolet  {
+  background-color: hsl(0,0%,7.5%);
+}
+
+pre
+{
+  background-color: #222;
+}
+
+a:link,
+a:visited {	color:hsla(240,100%,80%,1);}
+
+
+
+.__hr_more,
+hr._kx,
+hr {
+	border-bottom: 1px solid #222;
+}
+
+
+.__hr_more  {
+  border-top: 10px solid hsl(0,0%,7.5%);
+}
+
+

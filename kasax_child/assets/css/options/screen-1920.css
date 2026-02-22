@@ -1,0 +1,50 @@
+@charset "utf-8";
+/* .test*/
+/* .【画面サイズと幅】（media screen）
+幅。media以外の所は全てのサイズで読み込まれます。*/
+
+/*
+.__header_bar_clone2,
+.__header_bar{
+	width:100%;
+}
+*/
+
+/* 1910px～ */
+
+	.site {
+		/*width: 1895px;*/
+		width: 100%;
+		/*width: 1030px;*/
+		margin: 0 0;
+		/*border: solid 5px blue;*/
+
+	}
+	.content-area {
+		float: right;
+		/*margin: 0 -33% 0 0;*/
+		margin: 0 -250px 0 0;
+		width: 100%;
+
+		/*border: solid 5px red;*/
+	}
+	.site-main {
+		/*margin: 0 33% 0 0;*/
+		margin: 0 250px 0 0;
+	}
+	.site-content .widget-area {
+		float: left;
+		margin:auto;
+		overflow: hidden;
+		/*width: 31.5%;*/
+		width: 245px;
+	}
+	.site-footer {
+		clear: both;
+		width: 1895px;
+		/*width: 1030px;*/
+	}
+
+
+
+

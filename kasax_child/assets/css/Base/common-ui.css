@@ -1,0 +1,43 @@
+@charset "utf-8";
+/*	他は、php_cssへ	*/
+
+
+body
+{
+	line-height: 166%;
+	font-family:Segoe UI,SegoeUI	,"BIZ UDGothic";
+}
+
+
+
+body ,
+p ,
+ul ,
+ol
+{
+  font-size:10.5pt;
+}
+
+td p
+{
+	line-height: 150%;
+	word-break:break-all;
+	margin : 0px 5px 0px 20px;
+	width:80em;
+}
+
+
+
+/* .【a】リンク*/
+/* ..【メイン】*/
+/*↓下線消す*/
+a {
+	text-decoration	:none;
+	outline					:none;
+}
+
+
+a:focus,
+*:focus {
+ outline:none;
+}

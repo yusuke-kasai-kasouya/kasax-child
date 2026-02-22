@@ -1,0 +1,16 @@
+@charset "utf-8";
+/*
+    assets\css\Modules\matrix.css
+*/
+
+/* テーマのCSS等に追加 */
+.kx-matrix-error-notice {
+    color: #d63031;
+    border-left: 4px solid #d63031;
+    background: #fab1a033;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+

@@ -1,0 +1,113 @@
+{
+    "post_author_auto_sync": {
+        "note": "投稿タイプに基づきAuthorIDを強制書き換えする機能の有効判定",
+        "is_enabled": true,
+        "type_map": {
+            "post": 2,
+            "page": 1
+        }
+    },
+    "regex_patterns": {
+        "timestamp": "/20(\\d{2})(_|-)(\\d{2})(_|-)(\\d{2})/"
+    },
+
+    "generate_formatted_tab_title":{
+        "max_lne":26,
+        "max_mb_len":20,
+        "shorthand_definitions":{
+            "UtilityFunction": "U.F"
+        }
+    },
+    "dbkx1_ana_control_mapping_json":
+    {
+        "ghost_from": "ghost_from"
+    },
+
+    "dbkx1_ana_control_mapping_columns":
+    {
+        "tag": "tag",
+        "short_code": "short_code",
+        "raretu_code": "raretu_code",
+        "ghost_to": "ghost_to",
+        "consolidated_to": "consolidated_to",
+        "consolidated_from": "consolidated_from",
+        "overview_to": "overview_to",
+        "overview_from": "overview_from",
+        "flags": "flags"
+    },
+
+    "db_shared_json_works" : ["シリーズ", "スタジオ", "監督", "原作者", "脚本", "演出", "キャラクター原案", "キャラクターデザイン", "音楽","属性", "ジャンル", "評価","概要"],
+
+    "education_systems": {
+        "JP":{
+            "country_name": "Japan",
+            "academic_year_start": 4,
+            "cutoff_date": "04-02",
+            "age_logic": "10歳になる年度（4月時点9歳）が小4",
+            "grades": {
+                "4": "年少", "5": "年中", "6": "年長",
+                "7": "小1", "8": "小2", "9": "小3", "10": "小4", "11": "小5", "12": "小6",
+                "13": "中1", "14": "中2", "15": "中3",
+                "16": "高1", "17": "高2", "18": "高3",
+                "19": "大1", "20": "大2", "21": "大3", "22": "大4"
+            }
+        },
+        "US":{
+
+            "country_name": "United States",
+            "academic_year_start": 9,
+            "cutoff_date": "09-01",
+            "age_logic": "10歳になる年度は 5th Grade (日本より1年先行)",
+            "grades": {
+                "4": "Pre-K", "5": "Kindergarten",
+                "6": "1st Grade", "7": "2nd Grade", "8": "3rd Grade", "9": "4th Grade", "10": "5th Grade", "11": "6th Grade", "12": "7th Grade",
+                "13": "8th Grade", "14": "9th Grade (Freshman)", "15": "10th Grade (Sophomore)",
+                "16": "11th Grade (Junior)", "17": "12th Grade (Senior)",
+                "18": "College 1st", "19": "College 2nd", "20": "College 3rd", "21": "College 4th"
+            }
+        },
+        "GB":{
+            "country_name": "United Kingdom",
+            "academic_year_start": 9,
+            "cutoff_date": "09-01",
+            "age_logic": "10歳になる年度は Year 6 (日本より2年表記が先行)",
+            "grades": {
+                "4": "Reception",
+                "5": "Year 1", "6": "Year 2", "7": "Year 3", "8": "Year 4", "9": "Year 5", "10": "Year 6", "11": "Year 7", "12": "Year 8",
+                "13": "Year 9", "14": "Year 10", "15": "Year 11 (GCSE)",
+                "16": "Year 12 (A-level)", "17": "Year 13",
+                "18": "University 1st", "19": "University 2nd", "20": "University 3rd"
+            }
+        },
+        "AU":{
+            "country_name": "Australia",
+            "academic_year_start": 1,
+            "cutoff_date": "01-01",
+            "age_logic": "10歳になる年度は Year 5 (日本より1年先行 / 1月入学)",
+            "grades": {
+                "5": "Foundation / Prep",
+                "6": "Year 1",
+                "7": "Year 2",
+                "8": "Year 3",
+                "9": "Year 4",
+                "10": "Year 5",
+                "11": "Year 6",
+                "12": "Year 7",
+                "13": "Year 8",
+                "14": "Year 9",
+                "15": "Year 10",
+                "16": "Year 11",
+                "17": "Year 12 (VCE/HSC)",
+                "18": "University 1st",
+                "19": "University 2nd",
+                "20": "University 3rd"
+            }
+        }
+    },
+
+    "timeline_exclusion_map":{
+        "default":[800]
+    }
+}
+
+

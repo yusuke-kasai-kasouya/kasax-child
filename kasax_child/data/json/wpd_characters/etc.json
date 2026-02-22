@@ -1,0 +1,12 @@
+{
+  "default"		: {"name":"Not registered"	,"age_diff":0, "education":{"start":0,"end":0,"country":"JP"} ,"short_name":"N/A","info":"non" },
+
+  "∬1":
+  {
+    "001"		: {"name":"Momotarō"	,"age_diff":14, "education":{"start":6,"end":22,"country":"JP"} ,"short_name":"桃","info":"non" },
+    "201"		: {"name":"Dog"	,"age_diff":14, "education":{"start":6,"end":22,"country":"JP"} ,"short_name":"犬","info":"non" },
+    "301"		: {"name":"Monkey"	,"age_diff":14, "education":{"start":6,"end":22,"country":"JP"} ,"short_name":"猿","info":"non" },
+    "401"		: {"name":"Pheasant"	,"age_diff":14, "education":{"start":6,"end":22,"country":"JP"} ,"short_name":"雉","info":"non" },
+    "501"		: {"name":"Oni"	,"age_diff":14, "education":{"start":6,"end":22,"country":"JP"} ,"short_name":"鬼","info":"non" }
+  }
+}
