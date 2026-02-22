@@ -1,0 +1,8 @@
+*.code-workspace
+# Pythonのモデルや学習データフォルダを無視
+Python/models/*.db
+Python/models/*.sqlite
+Python/models/*.json
+# 容量の大きいバイナリデータ
+Python/models/*.pkl
+Python/models/*.npy
