@@ -6,6 +6,6 @@
         "要素", "概要", "来歴", "詳細", "状況", "変化", "結果", "最初", "最後","以下",
         "一部", "全部", "存在", "特徴", "意味","編集",
         "タグ", "シリーズ", "ジャンル",
-        "https", "txt", "date", "of","index","mm","text","the"
+        "https", "txt", "date", "of","index","mm","text","the","br","li","td","ul","blockquote","class","div","tr","tbody"
     ]
 }
