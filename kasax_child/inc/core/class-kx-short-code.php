@@ -134,7 +134,7 @@ class ShortCode {
                 }
                 $modified_diff = \Kx\Utils\Time::get_modified_diff($target_post);
                 $log_msg = "⟳ FX_Format: $target_id ⇒ $next_id";
-                Toolbox::update_post(1, $current_id, "[kx_format id=$next_id]", $modified_diff, $log_msg);
+                Toolbox::update_post(1, $current_id, "[ghost id=$next_id]", $modified_diff, $log_msg);
                 return "$log_msg";
             }
 
@@ -579,7 +579,8 @@ class ShortCode {
         $maintenance_actions = [
             'sync_kx0_basic'     => 'kx_0: 基本インデックス・時刻同期',
             'rebuild_kx0_type'   => 'kx_0: 属性（Type等）情報の再解析',
-            'refresh_kx1_meta'   => 'kx_1: メタデータ・Ghost等の制御層更新',
+            'refresh_kx1_meta'   => 'kx_1: メタデータの制御層更新（差分）',
+            'refresh_kx1_meta_full'   => 'kx_1: 強制全件メンテナンス。',
             'remap_hierarchy'    => 'kx_hierarchy: 階層構造（≫）の再マッピング',
             'sync_shared_title'  => 'kx_shared_title: 共有タイトル概念の同期',
         ];
@@ -598,6 +599,7 @@ class ShortCode {
                     case 'sync_kx0_basic':    dbkx0::maintenance_full_sync(); break;
                     case 'rebuild_kx0_type':  dbkx0::maintenance_type_rebuild(); break;
                     case 'refresh_kx1_meta':  dbkx1::maintenance_run_all(); break;
+                    case 'refresh_kx1_meta_full':  dbkx1::maintenance_run_all(true); break;
                     case 'sync_shared_title': \Kx\Database\dbkx_SharedTitleManager::maintenance_sync_all(); break;
                     case 'remap_hierarchy':
                         $table_kx0 = $wpdb->prefix . 'kx_0';

@@ -30,9 +30,9 @@ class KxDirector {
         add_shortcode( 'kx',        [\Kx\Launcher\KxPostLauncher::class, 'run' ]);
 
         // ショートコードクラス (Kx\Core\ShortCode) への移行
-        add_shortcode( 'dump',                  [ShortCode::class, 'dump_shortcode'] );
         add_shortcode( 'ghost',                 [ShortCode::class, 'shortcode_ghost_renderer'] );
         add_shortcode( 'kx_format',             [ShortCode::class, 'shortcode_ghost_renderer'] ); // 旧ショートコード
+        add_shortcode( 'dump',                  [ShortCode::class, 'dump_shortcode'] );
         add_shortcode( 'kx_age',                [ShortCode::class, 'renderTimelineAgeList'] );
         add_shortcode( 'kasax_index',           [ShortCode::class, 'outline_shortcode'] );
 

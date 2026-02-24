@@ -3,24 +3,16 @@
  * [Path]: inc\core-loader.php
  */
 
-
 use Kx\Core\KxDirector as kx;
-//use Kx\Utils\Toolbox;
 use Kx\Database\DB;
 
 use Kx\Core\SaveManager;    // 保存・同期管理
 use Kx\Core\AjaxHandler;    // Ajaxリクエスト処理
 use Kx\Core\ContentFilter;  // 表示フィルタ・加工
 
-
-
-
-
 // --- 0. ---
 // Utils レイヤー：補助・調整ツール
 use Kx\Utils\WpTweak;       // WP挙動調整・雑務
-
-
 
 //DB作成
 add_action('after_switch_theme', [DB::class,'create_custom_tables']);
@@ -112,9 +104,8 @@ add_action('wp_ajax_trash_post_ajax', [AjaxHandler::class, 'ajax_trash_post']);
 add_action('wp_ajax_insert_post_ajax', [AjaxHandler::class, 'ajax_my_insert_post_handler']);
 
 
-// --- 4. AJAXハンドラ (AjaxHandler) ---
 
-// 【追加】JS側で kx_ajax_obj を使えるようにする
+// JS側で kx_ajax_obj を使えるようにする
 add_action('wp_enqueue_scripts', function() {
     // 既に読み込まれているメインのJS（例えば SideBar や共通のJS）のハンドル名に紐付ける
     // ハンドル名が不明な場合は、適当な名前で空のスクリプトを登録してlocalizeする
@@ -129,7 +120,7 @@ add_action('wp_enqueue_scripts', function() {
 
 // 既存のハンドラ登録
 add_action('wp_ajax_kx_hierarchy_action', [AjaxHandler::class, 'hierarchy_ajax_handler']);
-// 【追加】AI Link用のハンドラを登録（これを忘れると400エラーになります）
+// AI Link用のハンドラを登録（これを忘れると400エラーになります）
 add_action('wp_ajax_kx_load_ai_links', [AjaxHandler::class, 'handle_load_ai_links']);
 
 

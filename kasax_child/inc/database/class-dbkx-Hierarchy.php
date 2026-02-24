@@ -639,7 +639,8 @@ class Hierarchy  extends Abstract_DataManager {
 
     /**
      * メンテナンス用：DB整合性クリーンアップ
-     * kx0 テーブルに存在しない実体レコードを hierarchy から削除する。
+     * 1. 幽霊削除：kx0に存在しない実体レコードを hierarchy から削除
+     * 2. 不足追記：kx0には存在するが hierarchy に登録されていない実体を生成(sync)
      * ※仮想フォルダ (post_id=0) は維持する。
      */
     public static function maintenance_cleanup() {
@@ -648,10 +649,11 @@ class Hierarchy  extends Abstract_DataManager {
         $table_0 = $wpdb->prefix . 'kx_0';
 
         $messages = [];
+        $count_deleted = 0;
+        $count_added = 0;
 
-        // 1. 実体レコード (is_virtual=0) なのに kx0 に ID が存在しないものを抽出
-        // 外部結合を行い、kx0側のIDが NULL のものを対象とする
-        $targets = $wpdb->get_results("
+        // --- 1. 幽霊削除：Hierarchyにあって kx0 にないものを消す ---
+        $targets_delete = $wpdb->get_results("
             SELECT h.full_path, h.post_id
             FROM $table_h AS h
             LEFT JOIN $table_0 AS k0 ON h.post_id = k0.id
@@ -660,30 +662,45 @@ class Hierarchy  extends Abstract_DataManager {
               AND k0.id IS NULL
         ");
 
-        if (!empty($targets)) {
-            foreach ($targets as $target) {
-                // 削除実行
+        if (!empty($targets_delete)) {
+            foreach ($targets_delete as $target) {
+                // hierarchy テーブルから不要なパスを削除
                 $wpdb->delete($table_h, ['full_path' => $target->full_path], ['%s']);
-
-                $messages[] = [
-                    'type' => 'warn',
-                    'text' => "整合性エラー: kx0に存在しないID {$target->post_id} を削除しました。 Path: {$target->full_path}"
-                ];
+                $messages[] = "整合性エラー(削除): kx0に存在しないID {$target->post_id} を削除しました。 Path: {$target->full_path}";
+                $count_deleted++;
             }
         }
 
-        // 2. 逆に kx0 にはあるが hierarchy にないものは、本来 sync() で生成されるべきだが、
-        // このクリーンアップでは「ゴミ出し」に専念するため、削除のみを行う。
+        // --- 2. 不足追記：kx0にあって Hierarchy にないものを生成する ---
+        $targets_add = $wpdb->get_results("
+            SELECT k0.id
+            FROM $table_0 AS k0
+            LEFT JOIN $table_h AS h ON k0.id = h.post_id
+            WHERE h.post_id IS NULL
+        ");
+
+        if (!empty($targets_add)) {
+            foreach ($targets_add as $target) {
+                $post_id = (int)$target->id;
+                // Hierarchy::sync または現在のクラスの sync を実行してレコードを追記する
+                if (method_exists(__CLASS__, 'sync')) {
+                    self::sync($post_id);
+                    $messages[] = "整合性補完(追記): Hierarchyに未登録だったID {$post_id} を同期しました。";
+                    $count_added++;
+                }
+            }
+        }
 
         // 結果を KxMessage に通知
         if (empty($messages)) {
             \Kx\Utils\KxMessage::info("Hierarchy クリーンアップ完了: 整合性に問題はありませんでした。");
         } else {
-            foreach ($messages as $msg) {
-                \Kx\Utils\KxMessage::warn($msg['text']);
+            foreach ($messages as $text) {
+                \Kx\Utils\KxMessage::warn($text);
             }
         }
-        return '━DB kxHierarchy━COUNT：'.count($messages);
+
+        return "━DB kxHierarchy━ 削除:{$count_deleted}件 / 追記:{$count_added}件";
     }
 
 

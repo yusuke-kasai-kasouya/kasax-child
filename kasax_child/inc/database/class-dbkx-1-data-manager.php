@@ -9,6 +9,7 @@ namespace Kx\Database;
 use Kx\Core\DynamicRegistry as Dy;
 use \Kx\Utils\KxMessage as Msg;
 use \Kx\Database\Hierarchy;
+use \Kx\Core\KxDirector as Kx;
 
 class dbkx1_DataManager extends Abstract_DataManager {
 
@@ -194,7 +195,7 @@ class dbkx1_DataManager extends Abstract_DataManager {
             'short_code'        => $assets['short_code'],
             'raretu_code'       => $assets['raretu_code'],
             'ghost_to'          => $assets['ghost_to'] ?: null,//$assets['ghost_to'] ?: ($old_data['ghost_to'] ?? null),
-            'consolidated_to'   => $assets['consolidated_to'] ?: ($old_data['consolidated_to'] ?? null),
+            'consolidated_to'   => $assets['consolidated_to'] ?? null,
             'consolidated_from' => $old_data['consolidated_from'] ?? null,
             'overview_to'       => $overview_to,
             'overview_from'     => $old_data['overview_from'] ?? null,
@@ -271,29 +272,38 @@ class dbkx1_DataManager extends Abstract_DataManager {
         global $wpdb;
         $table = self::t();
 
+        // 親データをロード
         $parent_data = self::load_raw_data($parent_id);
         if (!$parent_data) {
-            Msg::warn("[$my_id]：親記事(ID:$parent_id)が見つからないため概要紐付けに失敗しました。");
+            Msg::warn("[$my_id]：親(ID:$parent_id)のkx_1レコードが存在しません。");
             return;
         }
 
-        $from_ids = !empty($parent_data['overview_from']) ? explode(',', $parent_data['overview_from']) : [];
+        $old_from = $parent_data['overview_from'] ?? '';
+        $from_ids = !empty($old_from) ? explode(',', $old_from) : [];
 
+        // 既に入っていれば何もしない（Idle-Check）
         if (in_array((string)$my_id, $from_ids)) return;
 
         $from_ids[] = $my_id;
-        $new_from = implode(',', array_values(array_unique($from_ids)));
+        // 重複除去と整形
+        $new_from = implode(',', array_filter(array_unique($from_ids)));
 
+        // update対象をoverview_fromのみに限定し、既存の他のカラムには触れない
         $wpdb->update(
             $table,
-            ['overview_from' => $new_from,
-            'time' => time()],
+            [
+                'overview_from' => $new_from,
+                'time'          => time()
+            ],
             ['id' => $parent_id],
             ['%s', '%d'],
             ['%d']
         );
 
+        // 親のランタイムキャッシュのみを消去して再ロードを促す
         Dy::set_content_cache($parent_id, 'db_kx1', null);
+        Msg::info("[$my_id] の親記事($parent_id)の概要紐付けを更新しました。");
     }
 
 
@@ -328,14 +338,14 @@ class dbkx1_DataManager extends Abstract_DataManager {
                     case 'raretu':
                         $results['short_code'] = 'raretu';
                         $results['raretu_code'] = trim($params) ?: 'default';
-                        if (preg_match('/tougou=(\d+)/', $params, $id_m)) {
+                        if (preg_match('/tougou\s*=\s*["\']?(\d+)["\']?/', $params, $id_m)) {
                             $results['consolidated_to'] = $id_m[1];
                             self::update_consolidated_from_relation($post_id, $id_m[1]);
                         }
                         break;
                     case 'kx_format':
                     case 'ghost':
-                        if (preg_match('/id=(\d+)/', $params, $id_m)) {
+                        if (preg_match('/id\s*=\s*["\']?(\d+)["\']?/', $params, $id_m)) {
                             $results['ghost_to'] = $id_m[1];
                             self::update_ghost_from_relation($post_id, $id_m[1]);
                         }
@@ -442,8 +452,11 @@ class dbkx1_DataManager extends Abstract_DataManager {
         if (!empty($old_data['consolidated_from'])) {
             $src_id = (int)$old_data['consolidated_from'];
             $src_data = self::load_raw_data($src_id);
-            if (!$src_data || (int)($src_data['consolidated_to'] ?? 0) !== $post_id) {
+            if (!$src_data || (int)($src_data['consolidated_to'] ?? 0) !== (int)$post_id) {
+                echo '+c+';
+                echo kx::dump($src_data);
                 $old_data['consolidated_from'] = null;
+                Msg::warn("Post{$post_id}→to{$src_id}のconsolidated_fromを削除します。");
             }
         }
 
@@ -497,22 +510,14 @@ class dbkx1_DataManager extends Abstract_DataManager {
 
     /**
      * 統合先レコードの consolidated_from カラムに自身のIDを追加する
-     * @param int $my_id 自身の post_id (統合元)
-     * @param int $target_id 相手の post_id (統合先/consolidated_to)
-     */
-    /**
-     * 統合先レコードの consolidated_from カラムに自身のIDを追加する
-     * @param int $my_id 自身の post_id (統合元)
-     * @param int $target_id 相手の post_id (統合先/consolidated_to)
      */
     private static function update_consolidated_from_relation($my_id, $target_id) {
         global $wpdb;
         $table = self::t();
 
-        // 1. 相手側のデータをロード
         if (!Dy::is_ID($target_id)) {
             $title = Dy::get_title($my_id);
-            Msg::warn("[$title]：統合先(tougou)のid設定Error。ID:$target_id は存在しません。");
+            Msg::warn("[$title]：統合先(tougou)のID Error。ID:$target_id はWP上に存在しません。");
             return;
         }
 
@@ -529,24 +534,23 @@ class dbkx1_DataManager extends Abstract_DataManager {
                 ],
                 ['%d', '%s', '%d']
             );
+            Msg::info("統合先レコード(ID:$target_id)を新規作成し、統合元($my_id)を登録しました。");
         } else {
             // --- B. 既存更新ロジック ---
-            // 2. 既存の consolidated_from を配列化
             $raw_from = $target_data['consolidated_from'] ?? '';
-            $from_ids = !empty($raw_from) ? explode(',', $raw_from) : [];
+            // 空要素を排除して配列化
+            $from_ids = !empty($raw_from) ? array_filter(explode(',', $raw_from)) : [];
 
-            // 3. すでに自分が含まれているかチェック
             if (in_array((string)$my_id, $from_ids)) return;
 
-            // 4. 追加して再結合
-            $from_ids[] = $my_id;
-            $new_from = implode(',', array_unique($from_ids));
+            $from_ids[] = (string)$my_id;
+            // ユニーク化 -> フィルタリング -> インデックス振り直し
+            $new_from = implode(',', array_values(array_filter(array_unique($from_ids))));
 
-            // 5. DB更新
             $wpdb->update(
                 $table,
                 [
-                    'consolidated_from' => $new_from, // 累積されたリストを保存
+                    'consolidated_from' => $new_from,
                     'time'              => time()
                 ],
                 ['id' => $target_id],
@@ -555,7 +559,6 @@ class dbkx1_DataManager extends Abstract_DataManager {
             );
         }
 
-        // 6. キャッシュクリア
         Dy::set_content_cache($target_id, 'db_kx1', null);
     }
 
@@ -564,9 +567,6 @@ class dbkx1_DataManager extends Abstract_DataManager {
      * レコードが存在しない場合は新規作成（Replace）を行う
      */
     private static function update_ghost_from_relation($my_id, $target_id) {
-        //echo $target_id;
-        global $wpdb;
-        $table = self::t();
 
         // 1. ターゲットの既存データを取得
         $target_data = self::load_raw_data($target_id);
@@ -585,40 +585,29 @@ class dbkx1_DataManager extends Abstract_DataManager {
 
         // 3. JSON解析と更新判定
         $json = json_decode($target_data['json'] ?? '{}', true) ?: [];
-        //var_dump($json);
         $ghost_from = (array)($json['ghost_from'] ?? []);
 
         if (in_array($my_id, $ghost_from)) return;
 
         $ghost_from[] = $my_id;
         $json['ghost_from'] = array_values(array_unique($ghost_from));
-        //var_dump($json['ghost_from']);
-        //var_dump($json);
-        //echo $target_id;
-        //echo json_encode($json, JSON_UNESCAPED_UNICODE);
+        $new_json_str = json_encode($json, JSON_UNESCAPED_UNICODE);
 
-        // 4. データ更新
-        $result =$wpdb->update(
-            $table,
-            ['json' => json_encode($json, JSON_UNESCAPED_UNICODE), 'time' => time()],
+        // update_table ではなく $wpdb->update を使用する
+        global $wpdb;
+        $wpdb->update(
+            self::t(),
+            [
+                'json' => $new_json_str,
+                'time' => time()
+            ],
             ['id' => $target_id],
             ['%s', '%d'],
             ['%d']
         );
 
-        /*
-        if ($result === false) {
-        // DBエラーが発生している場合
-        Msg::error("DB Update Error: " . $wpdb->last_error);
-        } elseif ($result === 0) {
-            // 変更がない、または条件に合うレコードがない場合
-            Msg::info("DB Update: No rows affected. (ID: $target_id)");
-        } else {
-            Msg::info("DB Update Success: Affected rows $result");
-        }
-        */
-
-        //Dy::set_content_cache($target_id, 'db_kx1', null);
+        // キャッシュをクリアして、次に相手がロードされた時に最新のJSONが見えるようにする
+        Dy::set_content_cache($target_id, 'db_kx1', null);
     }
 
     /**
@@ -628,25 +617,44 @@ class dbkx1_DataManager extends Abstract_DataManager {
         global $wpdb;
         $table = self::t();
 
+        // 1. データのロードと存在確認
         $ov_data = self::load_raw_data($overview_id);
+
+        // 2. 既存データがある場合のIdle-Check (不変なら何もしない)
         if ($ov_data && ($ov_data['tag'] ?? '') === $tag) return;
 
-        // 概要レコード(overview_id)の tag カラムを更新
-        $wpdb->update(
-            $table,
-            ['tag' => $tag, 'time' => time()],
-            ['id' => $overview_id],
-            ['%s', '%d'],
-            ['%d']
-        );
+        if (!$ov_data) {
+            // --- A. レコードが存在しない場合は新規作成 ---
+            $wpdb->insert(
+                $table,
+                [
+                    'id'   => $overview_id,
+                    'tag'  => $tag,
+                    'time' => time()
+                ],
+                ['%d', '%s', '%d']
+            );
+            \Kx\Utils\KxMessage::info("[$post_id]：概要レコード($overview_id)を新規作成しタグ「$tag」を設定しました。");
+        } else {
+            // --- B. 既存更新 ---
+            $wpdb->update(
+                $table,
+                ['tag' => $tag, 'time' => time()],
+                ['id' => $overview_id],
+                ['%s', '%d'],
+                ['%d']
+            );
+            // 他のカラム（consolidated_from等）に触れず、tagのみをピンポイント更新するため安全
+        }
 
+        // 3. メモリ上の「記憶」をリセット
         Dy::set_content_cache($overview_id, 'db_kx1', null);
     }
 
 
 
 
-/**
+    /**
      * 基本情報以外の有効なデータが存在するか判定
      */
     private static function is_record_empty($data) {
@@ -674,8 +682,9 @@ class dbkx1_DataManager extends Abstract_DataManager {
     /**
      * kx_1テーブルのフルメンテナンス
      * kx_0の全レコードを走査し、必要に応じて同期・削除を実行
+     * @param bool $force trueの場合、更新日時に関わらず全件強制再同期
      */
-    public static function maintenance_full() {
+    public static function maintenance_full($force = false) {
         global $wpdb;
         $table_kx0 = $wpdb->prefix . 'kx_0';
         $table_kx1 = self::t();
@@ -691,24 +700,30 @@ class dbkx1_DataManager extends Abstract_DataManager {
         $count_total = count($posts);
         $count_sync = 0;
 
+        Msg::info(($force ? "【強制】" : "【差分】") . "メンテナンスを開始します（全{$count_total}件）...");
+
         foreach ($posts as $p) {
             $post_id = (int)$p['id'];
-            $kx0_modified = $p['wp_updated_at'];
 
-            // 2. kx1側の現在の更新日時を取得（DBから直接）
-            $kx1_modified = $wpdb->get_var($wpdb->prepare(
-                "SELECT wp_updated_at FROM $table_kx1 WHERE id = %d",
-                $post_id
-            ));
+            if (!$force) {
+                // 差分チェックモード
+                $kx0_modified = $p['wp_updated_at'];
+                $kx1_modified = $wpdb->get_var($wpdb->prepare(
+                    "SELECT wp_updated_at FROM $table_kx1 WHERE id = %d",
+                    $post_id
+                ));
 
-            // 3. 差分チェック：日時が異なる場合のみ sync を実行
-            if ($kx0_modified !== $kx1_modified) {
-                self::sync($post_id);
-                $count_sync++;
+                if ($kx0_modified === $kx1_modified) {
+                    continue; // 日時が一致していればスキップ
+                }
             }
+
+            // 同期実行（強制モードなら無条件、差分モードなら日時不一致時のみここに到達）
+            self::sync($post_id);
+            $count_sync++;
         }
 
-        Msg::info("メンテナンス完了: 全{$count_total}件中、{$count_sync}件の同期を実行しました。");
+        Msg::info("メンテナンス完了: 実行件数 {$count_sync} / {$count_total} 件");
     }
 
 
@@ -825,17 +840,64 @@ class dbkx1_DataManager extends Abstract_DataManager {
         Msg::info("テーブルの最適化（断片化解消）を完了しました。");
     }
 
+    /**
+     * 統合リレーション（consolidated_to/from）の全件修復
+     * ※ 1対1（単一ID）設計に基づき、相手側の consolidated_from を自分(ID)で上書き更新する
+     */
+    public static function maintenance_consolid() {
+        global $wpdb;
+        $table = self::t();
+
+        // 1. consolidated_to (統合先) が設定されているレコードをすべて抽出
+        $targets = $wpdb->get_results(
+            "SELECT id, consolidated_to FROM $table WHERE consolidated_to IS NOT NULL AND consolidated_to != 0",
+            ARRAY_A
+        );
+
+        if (empty($targets)) {
+            Msg::info("統合設定（consolidated_to）を持つレコードは見つかりませんでした。");
+            return;
+        }
+
+        $count = 0;
+        foreach ($targets as $row) {
+            $my_id     = (int)$row['id'];
+            $target_id = (int)$row['consolidated_to'];
+
+            // 2. 相手側(統合先)の consolidated_from に自分をセット
+            // 他のカラム（tagやjson等）を壊さないよう、ピンポイントでUPDATE
+            $updated = $wpdb->update(
+                $table,
+                [
+                    'consolidated_from' => $my_id,
+                    'time'              => time()
+                ],
+                ['id' => $target_id],
+                ['%d', '%d'],
+                ['%d']
+            );
+
+            if ($updated !== false) {
+                // 相手側のキャッシュをクリア（最新のリレーションが見えるようにする）
+                $count++;
+            }
+        }
+
+        Msg::info("統合リレーション修復完了: {$count} 件の相手側レコード(from)を更新しました。");
+    }
+
 
     /**
      * 全てのメンテナンス処理を順番に実行する
      */
-    public static function maintenance_run_all() {
+    public static function maintenance_run_all($force = false) {
         Msg::info("システムメンテナンスを開始します...");
 
-        self::maintenance_full();           // 1. kx0との同期・更新
+        self::maintenance_full($force);           // 1. kx0との同期・更新
         self::maintenance_cleanup_isolated_records();   // 2. 孤立レコード削除
         self::maintenance_repair_relations(); // 3. リレーション不整合修復
         self::maintenance_vacuum();         // 4. 物理最適化
+        self::maintenance_consolid();//統合系メンテ。
 
         Msg::info("全メンテナンス工程が正常に終了しました。");
     }
