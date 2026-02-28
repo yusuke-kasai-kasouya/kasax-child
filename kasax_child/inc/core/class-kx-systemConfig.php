@@ -79,8 +79,6 @@ class SystemConfig {
     //保存介入。タイトル。KxSu::get('add_save_title')
     private $add_save_title =  [
         '/' => '／' ,
-        '（' => '【' ,
-        '）' => '】' ,
         '(' => '〈' ,
         ')' => '〉' ,
         '+' => '＋' ,

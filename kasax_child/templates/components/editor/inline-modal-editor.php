@@ -46,7 +46,7 @@ if(!$edit_id){
                     <div class="ed-info-content js_accordion_target">
                         <?= $info_html ?>
 
-                        <?php if ($edit_id): ?>
+                        <?php if ($edit_id && $post_id === $edit_id) : ?>
                             <div class="ed-delete-zone" style="margin-top: 15px; padding-top: 10px; border-top: 1px dotted #555; text-align: right;">
                                 <button type="button"
                                         class="ed-btn-delete-trigger"

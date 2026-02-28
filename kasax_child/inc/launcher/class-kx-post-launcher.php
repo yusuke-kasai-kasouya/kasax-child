@@ -60,13 +60,12 @@ class KxPostLauncher {
             $ids = $query->get_ids();
         }
 
-
         // --- 有効な投稿のみに絞り込む (Validation) ---
         if (!empty($ids)) {
             $ids = Dy::validate_ids($ids);
         }
 
-        if (!empty($ids) && count($ids) > 1) {
+        if (!empty($ids) && count($ids) > 1 && $args['modified'] === false ) {
             $ids = self::sort_ids_by_title($ids);
         }
 
@@ -76,8 +75,7 @@ class KxPostLauncher {
             if (current_user_can('manage_options')) {
                 Msg::caution("KxPostLauncher：該当する投稿（ids）が見つかりませんでした。");
             }
-            return '<span style="color:red;">━　KxPostLauncher：n/a　━</spna>';
-
+            return '<span style="color:red;">━　KxPostLauncher：n/a　━</span>';
         }
 
         // 5. 動的な番号振り判定

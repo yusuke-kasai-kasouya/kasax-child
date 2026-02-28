@@ -426,17 +426,19 @@ class Kx_Consolidator {
             4 => 'Lv4: パターン置換',
         ];
 
+
         // 自動判定の取得
         $_determine = self::determine_default_args($post_id);
         $args['type']  = $_determine['type'] ?? $args['type'] ?? 'simple';
         $args['color'] = $_determine['color'] ?? 'hsl(0, 0%, 50%)';
+
+
 
         // 単体書き出し（single_export）時の強制上書き設定
         if (!empty($args['single_export'])) {
             $args['type']  = 'simple';             // 構造化（階層収集）せず、その記事のみを対象に
             $args['color'] = 'hsl(200, 70%, 50%)'; // ボタン等の色を「単体用」に上書き（例：青系）
         }
-
 
 
         // --- HTML構築開始 ---
@@ -524,13 +526,16 @@ class Kx_Consolidator {
 
         if ( Tp::is_type('phil_xampp_driven', $post_id)) {
             $_promptID = 'simple';
+        }else if ( Tp::is_type('strat_sales_policie_detail', $post_id)) {
+            $_promptID = '10104';
+            $_color = 'hsl(270, 100%, 50%)'; // マゼンタ系
         }
 
         // --- A. IDによる直接マッチング (priority_id_map) ---
         $id_map = $config['priority_id_map'] ?? [];
         if (isset($id_map[$post_id])) {
             $_promptID = $id_map[$post_id];
-            $_color = 'hsl(270, 100%, 50%)'; // マゼンタ系
+            $_color = 'hsl(330, 100%, 50%)'; // マゼンタ系
         }
 
         // --- B. 文脈・型によるマッチング (context_type_map) ---
@@ -548,17 +553,17 @@ class Kx_Consolidator {
 
 
         // --- C. 最終的な出力フォーマット成形 ---
-    if ($_promptID === 'simple' || $_promptID === 'structured') {
-        $type_value = $_promptID;
-        if ($_promptID === 'simple') {
-            $_color = 'hsl(30, 100%, 50%)'; // オレンジ
+        if ($_promptID === 'simple' || $_promptID === 'structured') {
+            $type_value = $_promptID;
+            if ($_promptID === 'simple') {
+                $_color = 'hsl(30, 100%, 50%)'; // オレンジ
+            }
+        } else {
+            // 数値ID（10104等）は with_header 形式に変換
+            $type_value = "with_header:{$_promptID}";
+            // ID指定の場合は少し色を強調（紫系）
+            if (!isset($_color)) $_color = 'hsl(270, 100%, 60%)';
         }
-    } else {
-        // 数値ID（10104等）は with_header 形式に変換
-        $type_value = "with_header:{$_promptID}";
-        // ID指定の場合は少し色を強調（紫系）
-        if (!isset($_color)) $_color = 'hsl(270, 100%, 60%)';
-    }
 
         return [
             'type'  => $type_value,
@@ -781,8 +786,13 @@ class Kx_Consolidator {
      */
     private static function classify_ids_for_special_task(array $ids, array $config) {
         $res = [
-            'why' => [], 'how' => [], 'what' => [],
-            'imp1' => [], 'imp2' => []
+            'orch' => [],
+            'why' => [],
+            'how' => [],
+            'what' => [],
+            'filter' => [],
+            'imp1' => [],
+            'imp2' => []
         ];
 
         // JSONから直接、または引数から重要度設定を取得
@@ -790,10 +800,12 @@ class Kx_Consolidator {
 
         foreach ($ids as $id) {
             $num = (int)$id;
-            // ゴールデンサークル分類
-            if ($num >= 10 && $num <= 19) $res['why'][] = "［ID_{$id}］";
-            elseif ($num >= 20 && $num <= 9999) $res['how'][] = "［ID_{$id}］";
-            else $res['what'][] = "［ID_{$id}］";
+            // 数値範囲による役割分離の確定
+            if ($num >= 1 && $num <= 9)       $res['orch'][]   = "［ID_{$id}］";
+            elseif ($num >= 10 && $num <= 19)  $res['why'][]    = "［ID_{$id}］";
+            elseif ($num >= 20 && $num <= 99)  $res['how'][]    = "［ID_{$id}］";
+            elseif ($num >= 100 && $num <= 999) $res['filter'][] = "［ID_{$id}］"; // 小文字に修正
+            else                               $res['what'][]   = "［ID_{$id}］";
 
             // 重要度分類
             foreach ($imp_config['1st'] ?? [] as $v) {
@@ -860,7 +872,12 @@ class Kx_Consolidator {
                     break;
                 case 4:
                     // テンプレートにラベルがなければ追記、あれば置換
-                    $gc_text = "\nWhy：" . implode(',', $cls['why']) . "\nHow：" . implode(',', $cls['how']) . "\nWhat：" . implode(',', $cls['what']);
+                    $gc_text = "\nOrch：" . implode(',', $cls['orch']) .
+                            "\nWhy：" . implode(',', $cls['why']) .
+                            "\nHow：" . implode(',', $cls['how']) .
+                            "\nWhat：" . implode(',', $cls['what']) .
+                            "\nFilter：" . implode(',', $cls['filter']);
+
                     $content .= (strpos($content, 'Why：') === false) ? $gc_text : "";
                     break;
                 case 5:

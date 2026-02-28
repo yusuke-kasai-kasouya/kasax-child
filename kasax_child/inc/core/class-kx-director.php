@@ -41,6 +41,7 @@ class KxDirector {
         add_shortcode( 'kasax_phpinfo',         [ShortCode::class, 'kxsc_Info_php'] );
 
         add_shortcode( 'get_text_file',         [ShortCode::class, 'get_text_file'] );
+        add_shortcode( 'get_text_folder',       [ShortCode::class, 'get_text_files_in_folder'] );
 
         add_shortcode( 'full_scale_maintenance', [ShortCode::class, 'render_database_maintenance_panel'] );
     }

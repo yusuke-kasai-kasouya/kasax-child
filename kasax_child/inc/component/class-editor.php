@@ -100,7 +100,7 @@ class Editor {
             $edit_id     = $ghost_to;      // 編集対象を実体IDに切り替え
             $editor_mode = 'ghost_to';     // テンプレート側での判定用
             $info_label .= 'ghost_to＋';
-            $label      .= '：G';          // 通常Editボタンのラベル装飾
+            $label      .= '：g';          // 通常Editボタンのラベル装飾
         }
 
         // 2. --- コンテキストに応じたリンク先ID ($link_id) の決定 ---

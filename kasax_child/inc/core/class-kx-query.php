@@ -166,7 +166,7 @@ class KxQuery {
 
         if (empty($where_clauses)) return false;
 
-        // --- 追加機能：ORDER BY (並び替え) ---
+        // --- ORDER BY (並び替え) ---
         $sort_field = 'id'; // デフォルト
         if (!empty($args['orderby'])) {
             switch ($args['orderby']) {
@@ -182,7 +182,7 @@ class KxQuery {
         $order = (strtoupper($args['order'] ?? '') === 'ASC') ? 'ASC' : 'DESC';
         $order_sql = "ORDER BY {$sort_field} {$order}";
 
-        // --- 追加機能：LIMIT (取得件数) ---
+        // --- LIMIT (取得件数) ---
         $limit_sql = "";
         $ppp = (int)($args['ppp'] ?? -1);
         if ($ppp > 0) {
@@ -290,6 +290,7 @@ class KxQuery {
     private function finalize($ids, $source = '') {
         if (!$ids || !is_array($ids)) return [];
 
+
         $ids = array_unique(array_map('intval', $ids));
         $ids = array_values(array_filter($ids));
         if (empty($ids)) return [];
@@ -298,6 +299,8 @@ class KxQuery {
         $target_type   = !empty($this->args['type'])  ? $this->args['type'] : null;
         $target_suffix = !empty($this->args['search_suffix']) ? $this->args['search_suffix'] : null;
         $limit = (!empty($this->args['ppp']) && $this->args['ppp'] !== -1) ? $this->args['ppp'] : 250;
+
+
 
 
         // フィルタリングが必要な条件がある場合
@@ -351,7 +354,6 @@ class KxQuery {
             Msg::notice("KxQuery: $source results truncated to $limit.");
             $ids = array_slice($ids, 0, $limit);
         }
-
 
         $this->post_ids = $ids;
         return $this->post_ids;

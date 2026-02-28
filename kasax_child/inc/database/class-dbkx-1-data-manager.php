@@ -453,8 +453,6 @@ class dbkx1_DataManager extends Abstract_DataManager {
             $src_id = (int)$old_data['consolidated_from'];
             $src_data = self::load_raw_data($src_id);
             if (!$src_data || (int)($src_data['consolidated_to'] ?? 0) !== (int)$post_id) {
-                echo '+c+';
-                echo kx::dump($src_data);
                 $old_data['consolidated_from'] = null;
                 Msg::warn("Post{$post_id}→to{$src_id}のconsolidated_fromを削除します。");
             }

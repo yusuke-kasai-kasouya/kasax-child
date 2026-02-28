@@ -35,6 +35,7 @@ class Hierarchy  extends Abstract_DataManager {
      * @param string $type 'insert' | 'update' | 'id' 等
      */
     public static function sync($post_id) {
+
         // Phase 1: 前処理（バリデーションとコンテキスト取得）
         $context = self::prepare_sync_context($post_id);
         if (!$context['valid']) return;
@@ -435,6 +436,7 @@ class Hierarchy  extends Abstract_DataManager {
      * @return int 0:正常, 1:raretu_code不足, 2:short_code不足(実体未設定)
      */
     public static function set_hierarchy_alert($post_id) {
+
         if (!$post_id) return 0;
 
         // 子がいなければ、コンテンツに関わらず正常(0)
@@ -482,7 +484,7 @@ class Hierarchy  extends Abstract_DataManager {
         $kx0_table = $wpdb->prefix . 'kx_0';
         $my_path = Dy::get_title($post_id);
 
-        $depth_chek = $path_index['depth'] + 1;
+        $depth_check = $path_index['depth'] + 1;
 
         unset($json_data['alert']);
         unset($json_data['raretu']);
@@ -500,7 +502,12 @@ class Hierarchy  extends Abstract_DataManager {
 
                 $chil_path_index = Dy::set_path_index($child_id);
 
-                if ($depth_chek == $chil_path_index['depth'] ) {
+                // 公開中（publish）以外はここで即座に排除
+                if ( ($chil_path_index['status'] ?? '') !== 'publish' ) {
+                    continue;
+                }
+
+                if ($depth_check == $chil_path_index['depth'] ) {
 
                     // 階層パスの前方一致チェック (かつての子を排除)
                     $child_title = Dy::get_title($child_id);

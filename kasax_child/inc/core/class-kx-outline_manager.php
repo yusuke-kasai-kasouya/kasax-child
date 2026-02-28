@@ -199,7 +199,6 @@ class OutlineManager {
     private static function determine_level_by_time_slug($stack, $current_slug, $current_title, $base_level) {
         if (empty($stack)) return $base_level;
 
-        // 1. 直近のアイテムと、直近の「H2」アイテムを特定
         $last_item = end($stack);
         $last_h2 = null;
         foreach (array_reverse($stack) as $item) {
@@ -210,48 +209,50 @@ class OutlineManager {
         }
 
         $last_h2_title = $last_h2 ? ($last_h2['title_raw'] ?? strip_tags($last_h2['title'])) : '';
-        $last_title    = $last_item['title_raw'] ?? strip_tags($last_item['title']);// 現在は使用していないが、直近のタイトル比較が必要になった時のために保持
         $last_slug     = $last_item['time_slug'] ?? '';
 
-        // --- A. グループ判定（前方一致） ---
-        // 直近のH2タイトルを自分が含んでいる場合、H3（子要素）とする
-        // これにより「方針(h2) -> 方針1(h3) -> 方針2(h3)」が成立する
-        if ($last_h2_title !== '') {
-            if (mb_strpos($current_title, $last_h2_title) === 0 && $current_title !== $last_h2_title) {
-                return 3;
-            }
+        // --- A. グループ判定（タイトル前方一致によるH3化） ---
+        if ($last_h2_title !== '' && mb_strpos($current_title, $last_h2_title) === 0 && $current_title !== $last_h2_title) {
+            return 3;
         }
 
-        // --- B. time_slug による判定 ---
+        // --- B. time_slug による桁ベースの判定 ---
         if ($current_slug && $last_slug) {
             $current_parts = explode('-', $current_slug);
             $last_parts    = explode('-', $last_slug);
 
             $curr_left  = $current_parts[0] ?? '';
-            $curr_right = $current_parts[1] ?? '';
+            $curr_right = $current_parts[1] ?? ''; // 例: "85"
             $last_left  = $last_parts[0] ?? '';
-            $last_right = $last_parts[1] ?? '';
+            $last_right = $last_parts[1] ?? ''; // 例: "81"
 
-            // 左側（10-00の「10」など）が一致する場合
             if ($curr_left !== '' && $curr_left === $last_left) {
                 if ($curr_right !== '' && $last_right !== '') {
-                    // 直前がh3の場合のみ、右側の連続性をチェックしてh4にするか判定
-                    if ($last_item['level'] === 3) {
-                        $curr_r_int = (int)preg_replace('/[^0-9]/', '', $curr_right);
-                        $last_r_int = (int)preg_replace('/[^0-9]/', '', $last_right);
 
-                        // 右側数値が同一、または「+1（連続）」の場合のみh4へ（詳細な追記とみなす）
-                        if ($curr_r_int === $last_r_int || $curr_r_int === $last_r_int + 1) {
-                            return 4;
-                        }
+                    // 数値の正規化（数字以外を除去して整数化）
+                    $curr_val = (int)preg_replace('/[^0-9]/', '', $curr_right);
+                    $last_val = (int)preg_replace('/[^0-9]/', '', $last_right);
+
+                    // 十の位を取得（例: 85 -> 8, 90 -> 9）
+                    $curr_decade = (int)floor($curr_val / 10);
+                    $last_decade = (int)floor($last_val / 10);
+
+                    // 右側が '00' は常に H2
+                    if ($curr_val === 0) return 2;
+
+                    // 十の位が同じグループの場合
+                    if ($curr_decade === $last_decade) {
+                        // グループの起点（例: 80, 90）なら H3、それより大きければ H4
+                        return ($curr_val % 10 === 0) ? 3 : 4;
                     }
-                    return 3; // それ以外はh3並列
+
+                    // 十の位が変わった場合は H3 に戻る
+                    return 3;
                 }
                 return 3;
             }
         }
 
-        // 条件に合致しなければ元のレベル（通常は2）を返す
         return $base_level;
     }
 

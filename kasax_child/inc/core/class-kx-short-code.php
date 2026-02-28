@@ -446,15 +446,15 @@ class ShortCode {
         {
             $_size_ARR = explode( ',' , $size);
 
-            foreach( $_size_ARR as $_valu ):
+            foreach( $_size_ARR as $value ):
 
                 if( !empty( $_width_all ) )
                 {
-                    $_width_all = $_width_all + $_valu;
+                    $_width_all = $_width_all + $value;
                 }
                 else
                 {
-                    $_width_all = $_valu;
+                    $_width_all = $value;
                 }
 
             endforeach;
@@ -671,8 +671,93 @@ class ShortCode {
         return $html;
     }
 
+
+    /**
+     * 指定フォルダ内の全ファイルを統合し、VS Codeリンク付きで出力する
+     */
+    public static function get_text_files_in_folder($atts) {
+        $options = shortcode_atts([
+            'folder' => 'test',
+            'path'   => 'dir_E_web_novel',
+            'ext'    => 'md',
+            'code'   => 'auto' // 文字コード指定を追加
+        ], $atts);
+
+        $base_dir = Su::get_path($options['path']);
+        $target_dir = rtrim($base_dir, '/') . '/' . trim($options['folder'], '/') . '/';
+
+        if (!is_dir($target_dir)) {
+            return "<p style='color:red;'>Directory not found: {$target_dir}</p>";
+        }
+
+        // 1. ファイル一覧の取得と自然順ソート
+        $pattern = $target_dir . "*." . $options['ext'];
+        $files = glob($pattern);
+        if (empty($files)) {
+            return "<p>No .{$options['ext']} files found in: {$options['folder']}</p>";
+        }
+        natsort($files);
+
+
+        // 1. フォルダ全体のパスをVSCリンク用に変換
+        $vsc_folder_link = "vscode://file/" . ltrim(str_replace('\\', '/', $base_dir), '/');
+
+        // 2. 冒頭のクイックリンクリスト（目次）の作成
+        $navigation = "<div class='kx-folder-index' style='background:#151515; color:#d4d4d4; padding:20px; border:1px solid #222; border-radius:8px; margin-bottom:40px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);'>";
+
+        // ヘッダーに「Open Folder」ボタンを配置
+        $navigation .= "<h2>📂" . esc_html($options['folder']) . "</h2>";
+        $navigation .= "<span style='margin-top:0; border-bottom:1px solid #444; padding-bottom:10px; color:#4daafc; display:flex; justify-content:space-between; align-items:center;'>";
+        $navigation .= "<span> </span>";
+        $navigation .= "<a href='{$vsc_folder_link}' title='Open Folder in VS Code' style='font-size:0.8em; background:#3e3e3e; color:#ccc; padding:4px 10px; border-radius:4px; text-decoration:none; border:1px solid #555;'>Open Folder</a>";
+        $navigation .= "</span>";
+
+        $navigation .= "<ul style='list-style:none; padding:0; margin:0;'>";
+
+
+        $combined_content = "";
+
+        foreach ($files as $file_path) {
+            $file_name = basename($file_path);
+            $vsc_link = "vscode://file/" . ltrim(str_replace('\\', '/', $file_path), '/');
+            $anchor_id = "section-" . sanitize_title($file_name);
+
+            // リスト（ダークテーマ配色）
+            // リストのリンクをアンカー(#)からVSCリンクへ変更
+            $navigation .= "<li style='margin-bottom:8px; display:flex; align-items:center;'>";
+            $navigation .= "📄 <a href='{$vsc_link}' title='Edit in VS Code' style='color:#4daafc; text-decoration:none; margin-left:8px; border-bottom:1px solid transparent;' onmouseover=\"this.style.borderBottom='1px solid #4daafc'\" onmouseout=\"this.style.borderBottom='1px solid transparent'\">" . esc_html($file_name) . "</a>";
+            // ページ内アンカーへのリンクも一応残したい場合は、小さなアイコン等で横に添えることも可能です
+            $navigation .= " <a href='#{$anchor_id}' title='Jump to Preview below' style='margin-left:auto; text-decoration:none; font-size:0.8em; color:#666;'>[Preview ↓]</a>";
+            $navigation .= "</li>";
+
+            // 2. 本文統合（セクション区切りをダークに）
+            $combined_content .= "<section id='{$anchor_id}' style='margin-top:60px; border-top:1px solid #444; padding-top:30px;'>";
+            $combined_content .= "<h2>". esc_html($file_name) ."</h2><span style='display:flex; justify-content:space-between; align-items:center; color:#4daafc; font-size:1.1em; border-left:4px solid #4daafc; padding-left:15px;'>";
+            $combined_content .= "<span>" . esc_html($file_name) . "</span>";
+            $combined_content .= "<a href='{$vsc_link}' style='font-size:0.8em; margin-left:15px; font-weight:normal; background:#264f78; color:#fff; padding:0px 12px; border-radius:4px; text-decoration:none;'>VSc Edit</a>";
+            $combined_content .= "</span>";
+
+            // 共通関数呼び出し（文字コード指定を渡す）
+            $combined_content .= self::render_file_content_core($file_path, $options['code'], false);
+            $combined_content .= "</section>";
+        }
+
+        $navigation .= "</ul></div>";
+
+
+        $sc_count = Dy::get('trace')['kxx_sc_count'] ?? null;
+        if (!empty($sc_count)) {
+            return $navigation;
+        }
+
+        $total_html = $navigation . $combined_content;
+
+        return OutlineManager::analyze_and_inject($total_html, get_the_ID(), 'sc');
+    }
+
     /**
      * 指定されたテキストファイルを読み込み、Markdown変換して返すショートコード
+     * (共通関数 render_file_content_core を使用)
      *
      * @param array $atts ショートコード属性
      * @return string 変換後のHTML
@@ -682,48 +767,72 @@ class ShortCode {
         // 1. 属性の初期値設定
         $options = shortcode_atts([
             'file' => 'S0000-Ksy_0000',
-            'path' => 'dir_E_seisaku'
+            'path' => 'dir_E_seisaku',
+            'code'   => 'auto' // 文字コード指定を追加
         ], $atts);
 
-        // 2. 基本パスの取得とディレクトリトラバーサル対策（必要に応じて）
+        // 2. フルパスの構築
         $base_dir = Su::get_path($options['path']);
         $file_path = "{$base_dir}{$options['file']}.txt";
 
-        // 表示用のデバッグ情報
-        $debug_info = "File：{$file_path}";
-
-        // 3. ショートコード判定
+        // 3. ショートコードのネスト/再帰判定 (既存ロジック)
         $sc_count = Dy::get('trace')['kxx_sc_count'] ?? null;
         if (!empty($sc_count)) {
             return '━━ SC ━━';
         }
 
-        // 4. ファイル存在チェック
+        // 4. 共通関数を呼び出してメインコンテンツを生成
+        // ショートコード単体呼び出しの場合は、デバッグ情報(VScリンク)を含める
+        $content_body = self::render_file_content_core($file_path,$options['code'], true);
+
+        // 5. 目次/アウトラインの注入 (最終的なHTMLに対して実行)
+        $content = OutlineManager::analyze_and_inject($content_body, get_the_ID(), 'sc');
+
+        return $content;
+    }
+
+    /**
+     * @param string $file_path
+     * @param string $encoding 'auto', 'UTF-8', 'SJIS-win' など
+     */
+    private static function render_file_content_core($file_path, $encoding = 'auto', $with_vsc_link = true) {
         if (!file_exists($file_path)) {
-            return "<p>ファイルが見つかりません: {$file_path}</p>";
+            return "<p style='color:#ff6b6b;'>ファイルが見つかりません: {$file_path}</p>";
         }
 
-        // 5. コンテンツの読み込みと変換
-        $raw_content = file_get_contents($file_path);
-        $utf8_content = mb_convert_encoding($raw_content, 'UTF-8', 'SJIS-win');
 
-        // ドット階層をMarkdown見出しに変換 (例: . → ##, .. → ###)
+        $header_info = "";
+        if ($with_vsc_link) {
+            $vscode_link = "vscode://file/" . str_replace('\\', '/', $file_path);
+            $header_info = "<div class='vsc-link-area' style='font-size: 0.8em; margin-bottom: 10px; color: #888;'>";
+            $header_info .= "File: <a href='{$vscode_link}' style='color: #4daafc; text-decoration: none;'>{$file_path}</a>";
+            $header_info .= "</div>";
+        }
+
+        $raw_content = file_get_contents($file_path);
+
+        // 文字コードの判定と変換
+        if ($encoding === 'auto') {
+            // 文字コードを推測（SJIS-win, UTF-8, EUC-JPの順にテスト）
+            $detected = mb_detect_encoding($raw_content, "UTF-8, SJIS-win, EUC-JP", true);
+            $utf8_content = mb_convert_encoding($raw_content, 'UTF-8', $detected ?: 'SJIS-win');
+        } else {
+            $utf8_content = mb_convert_encoding($raw_content, 'UTF-8', $encoding);
+        }
+
+        $utf8_content = trim($utf8_content);
+
+        // ドット階層変換ロジック (既存)
         $markdown = preg_replace_callback('/^(\.+)\s*/m', function ($matches) {
             $dot_count = strlen($matches[1]);
             $heading_level = min($dot_count + 1, 6);
             return str_repeat('#', $heading_level) . ' ';
         }, $utf8_content);
 
-        // 6. Markdownパース処理
         $parsedown = new \KxParsedown();
         $parsedown->setBreaksEnabled(true);
         $html = $parsedown->text($markdown);
 
-        // 7. 目次/アウトラインの注入
-        $content = OutlineManager::analyze_and_inject($html, get_the_ID(), 'sc');
-
-        return "{$debug_info}<hr>{$content}";
+        return "{$header_info}{$html}";
     }
-
-
 }

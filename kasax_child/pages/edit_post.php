@@ -45,6 +45,13 @@ if($edit_id !== 0){
     $add_style = "border: 3px solid red";
 }
 
+$row_style = '';
+$ghost_text = '';
+if( $post_id !== $edit_id){
+    $row_style = 'visibility: hidden;height:0;margin:0;';
+    $ghost_text = '<div>Ghost：タイトル編集禁止</div>';
+}
+
 ?>
 
 <div class="kx-editor-window-static" style="<?= $add_style ?>">
@@ -65,7 +72,7 @@ if($edit_id !== 0){
             </div>
         </header>
 
-        <div class="ed-title-row">
+        <div class="ed-title-row" style="<?= $row_style ?>">
             <input type="text" name="post_title_time_slug" class="ed-input-slug"
                 value="<?= esc_attr($post_titile_time_slug) ?>"
                 placeholder="00-00" tabindex="1">
@@ -78,6 +85,8 @@ if($edit_id !== 0){
 
             <button type="submit" class="ed-btn-save-top ed-icon" tabindex="2" onclick="closeEditorImmediate()">⬇</button>
         </div>
+
+        <?= $ghost_text ?>
 
 
         <div class="ed-main-container">

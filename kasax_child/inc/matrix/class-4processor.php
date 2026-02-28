@@ -419,6 +419,8 @@ class Processor {
         // toに関しては、その年や月の末尾まで含むよう z で補完して比較
         $norm_to   = $limit_to ? $this->normalize_time_slug($limit_to . '-zz') : null;
 
+        $new_title_time = $limit_from ?: '00-00';
+
         $character_map = [];
         $temp_slots    = []; // [normalized_string => raw_slug]
 
@@ -440,7 +442,7 @@ class Processor {
                 'age_diff'    => $raw_char_data['age_diff'] ?? 0,
                 'colormgr'    => $colormgr ?? [],
                 'descendants' => Dy::get_content_cache($hero_id, 'descendants') ?: [],
-                'new_title'   => $hero_title.'≫'.$limit_from.'＠New'
+                'new_title'   => $hero_title.'≫'.$new_title_time.'＠New'
             ];
         }
 
@@ -464,7 +466,7 @@ class Processor {
                     'age_diff'    => $m_raw_data['age_diff'] ?? 0,
                     'colormgr'    => $m_colormgr ?? [],
                     'descendants' => Dy::get_content_cache($m_id, 'descendants') ?: [],
-                    'new_title'   => $member_title.'≫'.$limit_from.'＠New'
+                    'new_title'   => $member_title.'≫'.$new_title_time.'＠New'
                 ];
             }
         }
