@@ -242,7 +242,7 @@ class DB {
 
             if( !empty( $str ))
             {
-                $str2 = 'CATチェック、問題あり:'.$_category_A->name . '≫c'.'<br>';
+                $str2 = 'CATチェック、問題あり:'.$tag->name . '≫c'.'<br>';
                 $str2 .= '<div style="color:red;">';
                 $str2 .= count( $_update_ids );
                 $str2 .= '件</div><hr>';

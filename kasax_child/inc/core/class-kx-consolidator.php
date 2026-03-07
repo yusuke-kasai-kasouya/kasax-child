@@ -426,11 +426,14 @@ class Kx_Consolidator {
             4 => 'Lv4: パターン置換',
         ];
 
-
         // 自動判定の取得
         $_determine = self::determine_default_args($post_id);
         $args['type']  = $_determine['type'] ?? $args['type'] ?? 'simple';
         $args['color'] = $_determine['color'] ?? 'hsl(0, 0%, 50%)';
+
+        // 出力形式の初期値を決定 (優先順位: 自動判定 > 引数 > デフォルト'txt')
+        $default_format = $_determine['format'] ?? $args['export_format'] ?? 'txt';
+
 
 
 
@@ -472,7 +475,7 @@ class Kx_Consolidator {
         $html .= '</select>';
         $html .= '</div>';
 
-        // --- サニタイズレベル選択 (新設) ---
+        // --- サニタイズレベル選択 ---
         $html .= '<div style="margin-bottom:15px;padding-left: 10px;">';
         $html .= '<label style="font-size:11px; display:block; color:#888;">テキスト置換レベル:</label>';
         $html .= '<select name="sanitize_level" style="font-size:12px; padding:2px; width:220px; border-color:#aaa;">';
@@ -489,13 +492,22 @@ class Kx_Consolidator {
         $html .= '</select>';
         $html .= '</div>';
 
-        // --- 追記：出力形式（拡張子）選択 ---
+        // 出力形式（拡張子）選択 ---
         $html .= '<div style="margin-bottom:15px;padding-left: 10px;">';
         $html .= '<label style="font-size:11px; display:block; color:#888;">出力形式:</label>';
         $html .= '<select name="export_format" style="font-size:12px; padding:2px; width:220px; border-color:#aaa;">';
-        $export_formats = ['txt' => 'Text (.txt)', 'md' => 'Markdown (.md)', 'epub' => 'eBook (.epub)'];
+
+        $export_formats = [
+            'txt'  => 'Text (.txt)',
+            'md'   => 'Markdown (.md)',
+            'epub' => 'eBook (.epub)'
+        ];
+
         foreach ($export_formats as $ext => $f_label) {
-            $html .= '<option value="' . esc_attr($ext) . '">' . esc_html($f_label) . '</option>';
+            //$html .= '<option value="' . esc_attr($ext) . '">' . esc_html($f_label) . '</option>';
+
+            $selected = ($ext === $default_format) ? ' selected' : '';
+            $html .= '<option value="' . esc_attr($ext) . '"' . $selected . '>' . esc_html($f_label) . '</option>';
         }
         $html .= '</select>';
         $html .= '</div>';
@@ -523,12 +535,14 @@ class Kx_Consolidator {
         // デフォルト値の設定
         $_promptID = 'structured';
         $_color = 'hsl(150, 100%, 50%)'; // スプリンググリーン
+        $format = null;
 
         if ( Tp::is_type('phil_xampp_driven', $post_id)) {
             $_promptID = 'simple';
         }else if ( Tp::is_type('strat_sales_policie_detail', $post_id)) {
             $_promptID = '10104';
             $_color = 'hsl(270, 100%, 50%)'; // マゼンタ系
+            $format = 'md';
         }
 
         // --- A. IDによる直接マッチング (priority_id_map) ---
@@ -568,6 +582,7 @@ class Kx_Consolidator {
         return [
             'type'  => $type_value,
             'color' => $_color,
+            'format' => $format,
             'ai_select' => 'gemini' // デフォルトAI
         ];
     }
