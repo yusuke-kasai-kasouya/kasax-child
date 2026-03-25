@@ -155,7 +155,7 @@ class DyContentHandler {
                 $data
             );
         }
-        // パターンC: それ以外（ana, vis 階層への直接セット、または個別のレイヤー更新）
+        // パターンC それ以外（ana, vis 階層への直接セット、または個別のレイヤー更新）
         else {
             $item[$sub_key] = $data;
         }

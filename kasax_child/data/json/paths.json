@@ -5,5 +5,6 @@
     "dir_export_all" : "C:/path/to/your/wordpress/export",
     "dir_E_seisaku"  : "C:/path/to/your/working_dir",
     "json"           : "BASE_DIR/data/json",
-    "php"            : "BASE_DIR/data/php"
+    "php"            : "BASE_DIR/data/php",
+    "pandoc"          : "C:\\path\\to\\your\\Pandoc\\pandoc.exe"
 }

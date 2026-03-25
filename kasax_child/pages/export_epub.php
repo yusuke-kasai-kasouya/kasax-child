@@ -3,6 +3,8 @@
 //* [Path]: inc\core\export_epub.php
 require_once('../../../../wp-load.php');
 
+use Kx\Core\SystemConfig as Su;
+
 // 投稿IDの受け取り
 if (empty($_POST['id'])) {
     echo 'ERROR - 投稿IDが指定されていません。';
@@ -55,15 +57,15 @@ file_put_contents($tmp_html, $html);
 
 // EPUB出力ファイルパス設定
 $datetime = date('Ymd_His');
-$save_dir = 'D:/00_WP/Export/';
+//$save_dir = 'D:/00_WP/Export/';
+$save_dir = Su::get_path('dir_export_all');
 if (!file_exists($save_dir)) {
     mkdir($save_dir, 0755, true);
 }
 $epub_file = $save_dir . "{$title}_ID{$id}_{$datetime}.epub";
 
 // Pandocのコマンド（パスは環境に応じて変更）
-//$pandoc = '"C:\\Program Files\\Pandoc\\pandoc.exe"';
-$pandoc = '"C:\Users\kasai\AppData\Local\Pandoc\\pandoc.exe"';
+$pandoc = Su::get_path('pandoc');
 $cmd = "{$pandoc} \"{$tmp_html}\" -o \"{$epub_file}\"";
 exec($cmd, $out, $status);
 

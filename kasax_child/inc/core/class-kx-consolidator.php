@@ -11,7 +11,9 @@ use Kx\Core\KxDirector as kx;
 use \Kx\Utils\KxMessage as Msg;
 use Kx\Core\TitleParser as Tp;
 use Kx\Utils\Toolbox;
+use Kx\Core\ShortCode;
 use Exception;
+
 
 class Kx_Consolidator {
     // 処理中かどうかを保持するスタティック変数
@@ -218,6 +220,18 @@ class Kx_Consolidator {
             $content = $post->post_content;
             $pattern = '/^タグ：.*(?:\R___)?\R?/mu';
             $cleaned_content = preg_replace($pattern, '', $content);
+
+
+            // 4.1 ファイル読み込み。
+            $pattern_sc = '/\[get_text_folder\s+([^\]]+)\]/i';
+            $cleaned_content = preg_replace_callback($pattern_sc, function($matches) {
+                // 属性文字列から配列に変換
+                $atts = shortcode_parse_atts($matches[1]);
+
+                $atts['type'] = 'consolidator';
+
+                return ShortCode::get_text_files_in_folder($atts);
+            }, $cleaned_content);
 
             // 5. データのパッケージ化
             $data[] = [

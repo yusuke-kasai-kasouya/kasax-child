@@ -680,7 +680,8 @@ class ShortCode {
             'folder' => 'test',
             'path'   => 'dir_E_web_novel',
             'ext'    => 'md',
-            'code'   => 'auto' // 文字コード指定を追加
+            'code'   => 'auto', // 文字コード指定を追加
+            'type'   => ''
         ], $atts);
 
         $base_dir = Su::get_path($options['path']);
@@ -714,7 +715,6 @@ class ShortCode {
 
         $navigation .= "<ul style='list-style:none; padding:0; margin:0;'>";
 
-
         $combined_content = "";
 
         foreach ($files as $file_path) {
@@ -729,6 +729,12 @@ class ShortCode {
             // ページ内アンカーへのリンクも一応残したい場合は、小さなアイコン等で横に添えることも可能です
             $navigation .= " <a href='#{$anchor_id}' title='Jump to Preview below' style='margin-left:auto; text-decoration:none; font-size:0.8em; color:#666;'>[Preview ↓]</a>";
             $navigation .= "</li>";
+
+            if( $options['type'] === 'consolidator'){
+                $combined_content .= self::render_file_content_core($file_path, $options['code'], false);
+                $combined_content .= "\n";
+                continue;
+            }
 
             // 2. 本文統合（セクション区切りをダークに）
             $combined_content .= "<section id='{$anchor_id}' style='margin-top:60px; border-top:1px solid #444; padding-top:30px;'>";
@@ -750,7 +756,14 @@ class ShortCode {
             return $navigation;
         }
 
-        $total_html = $navigation . $combined_content;
+        if( $options['type'] === 'consolidator'){
+            $total_html = $combined_content;
+            $total_html = $combined_content;
+
+        }else{
+            $total_html = $navigation . $combined_content;
+        }
+
 
         return OutlineManager::analyze_and_inject($total_html, get_the_ID(), 'sc');
     }

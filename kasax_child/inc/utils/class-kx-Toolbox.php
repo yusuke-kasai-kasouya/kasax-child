@@ -883,7 +883,7 @@ class Toolbox {
 
             // --- ここから Pandoc 処理 ---
             if ($opt['ext'] === 'epub') {
-                $pandoc_exe = "\"C:\\Program Files\\Pandoc\\pandoc.exe\"";
+                $pandoc_exe = Su::get_path('pandoc');
 
                 // 1. デバッグ用：今保存した中身（HTML）を「.debug.html」としてコピー保存
                 $debug_html_path = str_replace('.epub', '.debug.html', $full_file_path);
@@ -983,13 +983,11 @@ class Toolbox {
      * @param string $title タイトル
      * @return string 完全なHTML構造の文字列
      */
-    public static function convert_content_to_epub_html($content, $post_id,$title = 'no-title') {
+    public static function convert_content_to_epub_html($text, $post_id,$title = 'no-title') {
 
         // 1. WordPressの自動整形を適用（改行を <p> や <br> に変換）
         // これにより、生テキストやMarkdown混じりの内容が正しいHTML構造になります
 
-
-        //$content = kxad_the_content_compile($content, 'epub');
         $content = \Kx\Core\ContentProcessor::compile($text,$post_id, 'epub');
         $content = wpautop($content);
 

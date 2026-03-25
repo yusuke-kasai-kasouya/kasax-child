@@ -33,8 +33,11 @@ class ContentProcessor {
         // 1. 変換前処理
         $processed = self::pre_process($text);
 
+
         // 2. Markdownパース
         $parsed = self::parse_markdown($processed['text']);
+
+
 
         // 3. 変換後処理
         $final_text = self::post_process($parsed, $processed['math_stack'], $post_id);

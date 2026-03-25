@@ -45,7 +45,7 @@ foreach ($characters as $char_no => $char_info):
                     $char_info['new_title'],
                     null,
                     '＋',
-                    'timetable_matrix'  
+                    'timetable_matrix'
                 );
              ?>
 
@@ -174,6 +174,7 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
                 </div>
             <?php endforeach; ?>
         <?php endforeach; ?>
+
     </div>
 </div>
 
@@ -185,8 +186,6 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     padding: 0px 8px 0  0;
 
     overflow-x: hidden;
-    width: 100%;
-
 }
 
 .kx-broadcast-grid {
@@ -194,13 +193,16 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     /* 1列目(時間用ラベル)を20px、残りをキャラクター列とする */
     grid-template-columns: repeat(var(--char-count), minmax(60px, 1fr));
     gap: 1px;
-    background: #333; /* 枠線代わり */
+    background: #222; /* 枠線代わり */
     min-width: 800px;
+    min-height: 100vh;
+    align-content: start;   /* 行全体を上（開始位置）に詰める */
 }
 
 /* ヘッダー固定 */
 .kx-grid-header {
     display: contents;
+
 }
 .kx-header-cell {
     position: sticky;
@@ -212,7 +214,6 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     text-align: center;
     font-weight: bold;
     border-bottom: 2px solid #444;
-
 }
 
 .sticky-mode .kx-header-cell,
@@ -223,7 +224,6 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     -1px 1px 0 #000,  /* 左下 */
     1px -1px 0 #000,  /* 右上 */
     -1px -1px 0 #000; /* 左上 */
-
 }
 
 
@@ -238,6 +238,7 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     letter-spacing: 0.1em;
     position: sticky;
     left: 0;
+
 }
 
 /* コンテンツセル */
@@ -299,6 +300,7 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     width: 100%;
     max-width: 1657px;
     background: #222;
+
     border: 1px solid #444;
     border-radius: 4px;
     z-index: 9999;
@@ -334,15 +336,10 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     /*background: transparent;*/
 }
 
-
-
-
-
-
 /* 親コンテナの調整 */
 .kx-time-divider {
     border-bottom: 1px solid #333; /* 区切り線 */
-    background: rgba(0, 0, 0, 0.2);
+    background: hsla(0, 0%, 50%, 0.05);
     padding: 4px 0;
 }
 

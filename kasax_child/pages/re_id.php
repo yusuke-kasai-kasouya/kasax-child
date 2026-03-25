@@ -6,7 +6,7 @@ global $wpdb;
 
 // デフォルト範囲
 $range_start = 1;
-$range_end = 149;
+$range_end = 150;
 
 // 範囲取得（POST優先）
 if (!empty($_POST['range_start'])) {
