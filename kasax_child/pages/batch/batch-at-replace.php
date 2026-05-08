@@ -6,6 +6,7 @@
 require_once('../../../../../wp-load.php');
 
 $ids_raw = $_GET['ids'] ?? '';
+$title = $_GET['title'] ?? '';
 $ids_array = array_filter(explode(',', $ids_raw));
 $ids_count = count($ids_array);
 
@@ -47,7 +48,7 @@ $default_from = '/＠.*$/';
             <label style="color: #ffcc00;">2. 新しい接尾辞（自動で＠がつきます）</label><br>
             <div style="display: flex; align-items: center;">
                 <span class="prefix-display">＠</span>
-                <input type="text" id="display_to" value="" placeholder="例: 回想" required autofocus>
+                <input type="text" id="display_to" value="<?= esc_attr($title) ?>" placeholder="例: 回想" required autofocus>
             </div>
             <input type="hidden" name="title_to" id="actual_title_to" value="">
         </div>

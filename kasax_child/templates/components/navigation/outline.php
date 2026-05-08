@@ -7,6 +7,8 @@
  */
 
 if (empty($items)) return;
+if (empty($post_id)) return;
+if (empty($title_at_name)) return;
 
 // h2の数に応じてゼロ埋め（01.）するか判定
 $h2_count = count(array_filter($items, function($i) { return $i['level'] === 2; }));
@@ -30,7 +32,7 @@ $h3_current_idx = 0; // 表示上のH3枝番
 <nav class="kx-outline-container">
     <?php if($type==='side' || $type==='side_matrix_grid'): ?>
         <div class="kx-outline-header" style="<?= $style_grid ?>">
-            <button onclick="window.scrollTo({top:0, behavior:'smooth'})" class="__a_hover" style="width:100%; font-size:10px; background:transparent; color:#888; border:1px solid #333; cursor:pointer;">↑ TOP</button>
+            <button onclick="window.scrollTo({top:0, behavior:'smooth'})" class="__a_hover" style="width:100%; font-size:12px; background:transparent; color:#aaa; border:1px solid #333; cursor:pointer;">↑ <?= $title_at_name ?></button>
         </div>
     <?php endif; ?>
 

@@ -1,12 +1,25 @@
 <?php
 /**
- * templates/components/post/card.php
+ * [Path]: templates/components/post/card.php
+ *
+ * @var int    $id            投稿ID
+ * @var string $mode          表示モード
+ * @var string $title         表示タイトル
+ * @var string $excerpt       本文抜粋
+ * @var array  $slots         メタ情報スロット
+ * @var string $paint         背景色等のスタイル
+ * @var string $traits        クラス・変数等のスタイル
+ * @var string $update_border 更新通知ボーダークラス
+ * @var int|null $ghost_to    ゴースト先ID
+ * @var string $edit_url      編集URL
  */
 
 use \Kx\Component\Editor;
 
 $is_blind = ($mode === 'blind');
 if($is_blind) $mode = 'standard';
+
+$title_style = '';
 
 if( $mode === 'matrix_editor_left' || $mode==='matrix_editor_right'){
     $card_mode = 'standard';
@@ -127,7 +140,7 @@ $permalink_id = $ghost_to ?? $id;
     justify-content: flex-end;
 }
 
-.kx-card_cell--edtior {
+.kx-card_cell--editor{
     display: flex;
     align-items: center;
     flex-shrink: 0;       /* 編集ボタンが潰れないように固定 */

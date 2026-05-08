@@ -164,18 +164,16 @@ class Toolbox {
 
 
 
-
-
-
-
-
-
     /**
-     * SideとTemplateで利用。
-     * 2023-09-09
+     * サイドバーおよびテンプレート用カテゴリー検索ボックスの生成
      *
-     * @param array $in
-     * @return void
+     * Laravel検索テンプレートの呼び出し、またはフォールバック用の
+     * カテゴリー・タグ選択フォームHTMLを生成する。
+     *
+     * @param array $args {
+     *     @type int $t 表示タイプ/幅の識別子 (24, 50, or others)
+     * }
+     * @return string 生成されたHTMLコンテンツ
      */
     public static function category_search_box( $args ) {
 
@@ -202,6 +200,11 @@ class Toolbox {
             $_width	= 300;
             $_css1		= '__kx_search';
             $_size		= 24;
+            $_online = '<div style="display:flex;justify-content: flex-end;">';
+            $_online .= '<div id="laravel-status-badge" style="display: inline-block; padding: 0px 8px; margin-bottom: 0px; font-size: 11px; font-weight: bold; color: #fff; background-color: #c82333; border-radius: 4px; letter-spacing: 1px;">';
+            $_online .= '● Laravel OFF-LINE';
+            $_online .= '</div>';
+            $_online .= '</div>';
         }
 
         if( empty( $cat ) )
@@ -222,10 +225,11 @@ class Toolbox {
             ], false); // 文字列として返す
         }
 
-
-        $_categorys =$_categories;
-
         $ret  = '';
+
+        if ($_online) {
+            $ret .= $_online;
+        }
 
         $ret .= '<div id="search">';
 
@@ -235,7 +239,7 @@ class Toolbox {
 
         $ret .= '<div class="'.$_css1.'">Category</div>';
 
-        foreach( $_categorys as $_category ):
+        foreach( $_categories as $_category ):
 
             $ret .= '<table style="max-width:'.$_width.'px;"><tbody>';
             $ret .= '<tr><td  width="15">';
@@ -319,7 +323,6 @@ class Toolbox {
 
         // --- 設定のロード ---
         $config = Su::get('system_internal_schema')['generate_formatted_tab_title'];
-        $max_len    = $config['max_lne'] ?? 26;    // 混合上限
         $max_mb_len = $config['max_mb_len'] ?? 20; // MB上限
         $shorthand  = $config['shorthand_definitions'] ?? [];
         $sep = ' ';
@@ -350,7 +353,7 @@ class Toolbox {
 
             // 中間層を短縮（各パーツ最大3文字+*）
             $short_middles = array_map(function($m) {
-                return (mb_strlen($m) > 3) ? mb_substr($m, 0, 3) . '*' : $m;
+                return (mb_strlen($m) > 4) ? mb_substr($m, 0, 3) . '*' : $m;
             }, $middles);
 
             $result = $first . $sep . implode($sep, $short_middles) . $sep . $last;

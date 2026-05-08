@@ -154,6 +154,21 @@ $display_content = preg_replace("/\r\n|\r|\n/", " ", trim(strip_tags($content)))
                                 //url:'fetch_excerpt.php',
                                 data: { id: editId },
                                 success: function(data) {
+
+
+                                   // 1. まず中身を最新のHTMLに入れ替える
+                                    $content.html(data);
+
+                                    // 2. 【重要】インラインで付与したスタイルとクラスをリセットする
+                                    $content.css({
+                                        'color': '',          // 空文字を入れるとインラインスタイルが削除され、元のCSSに戻る
+                                        'white-space': '',    // 保存中の pre-wrap 設定を解除
+                                        'opacity': ''         // 透明度の操作もリセット
+                                    });
+                                    $content.removeClass('is-saving-temp'); // クラスも削除
+
+                                    // 3. フェードインして「保存完了」の演出
+
                                     $content.html(data).fadeIn(100);
 
                                     $content.css({

@@ -75,7 +75,7 @@ def train_ai_model():
     coefficients = model.coef_
     word_importance = pd.DataFrame({'word': feature_names, 'importance': coefficients})
 
-    print("\n--- 高い知識スコア（5.0に近い）に寄与する表現 TOP 10 ---")
+    print("\n--- 高い知識スコアに寄与する表現 TOP 10 ---")
     print(word_importance.sort_values(by='importance', ascending=False).head(10))
 
     print("\n--- 低いスコア（作業ポスト的）と判断される表現 TOP 10 ---")

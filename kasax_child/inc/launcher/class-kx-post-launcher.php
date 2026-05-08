@@ -75,7 +75,8 @@ class KxPostLauncher {
             if (current_user_can('manage_options')) {
                 Msg::caution("KxPostLauncher：該当する投稿（ids）が見つかりませんでした。");
             }
-            return '<span style="color:red;">━　KxPostLauncher：n/a　━</span>';
+            $id = $args['id'] ?: 'NoID';
+            return '<span style="color:red;">━　KxPostLauncherError：'.$id.'　━</span>';
         }
 
         // 5. 動的な番号振り判定

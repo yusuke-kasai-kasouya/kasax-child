@@ -336,10 +336,11 @@ class OutlineManager {
 
         // 3. テンプレートに渡す変数の準備
         $args = [
-            'type'      => $type,
-            'post_id'   => $post_id,
-            'items'     => $data['stack'],     // a系統, b系統が統合された全リスト
-            'processed' => $data['processed']  // 処理済みフラグ
+            'type'          => $type,
+            'post_id'       => $post_id,
+            'title_at_name' => $path_index['at_name'],
+            'items'         => $data['stack'],     // a系統, b系統が統合された全リスト
+            'processed'     => $data['processed']  // 処理済みフラグ
         ];
 
         // KxTemplateを使用して表示層（View）を呼び出す

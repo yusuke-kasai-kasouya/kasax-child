@@ -37,7 +37,7 @@ class QuickInserter {
                 break;
 
             case 'card':
-                $new_title = ($path_index['full'] ?? '') . '(新規追加)';
+                $new_title = ($path_index['full'] ?? '新規追加') ;
                 $paint    .= 'opacity: 0.5;';
                 break;
             case 'matrix':

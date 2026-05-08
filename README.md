@@ -157,7 +157,8 @@ The system is highly modularized and controlled by the following class groups:
 | Filename | Class Name | Description |
 | --- | --- | --- |
 | class-kx-message.php | `KxMessage` | Utility for stack-based management of system errors and notifications. |
-| class-kx-taskboard.php | `TaskBoard` | Generates task-oriented dashboards combining inserters and post lists. |
+| class-kx-workstation.php | `WorkStation` | Advanced task board that dynamically scans for existing content by prefixes to provide situational UI for creation and management. |
+| class-kx-taskboard.php | `TaskBoard` | Generates task-oriented dashboards for standard contexts like search, menus, and top lists. |
 | class-kx-template.php | `KxTemplate` | Specialized template engine for separating logic from presentation. |
 | class-kx-time.php | `Time` | Time control utility for timezone management and age/date change detection. |
 | class-kx-Toolbox.php | `Toolbox` | Multi-purpose utility for debug dumps, EPUB conversion, and file saving. |

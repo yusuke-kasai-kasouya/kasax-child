@@ -1,4 +1,8 @@
 <?php
+/**
+ * [Path]: inc\visual\class-TitleRenderer.php
+ */
+
 namespace Kx\Visual;
 
 use Kx\Core\SystemConfig as Su;
@@ -74,54 +78,6 @@ class TitleRenderer {
         ];
 
         return KxTemplate::get('layout/page-title', $args, true);
-    }
-
-
-    /**
-     * タイトルのセグメントに名称を付随させる
-     * 1. prefix_map (汎用) 優先
-     * 2. contextual_definitions (文脈依存) 追記
-     */
-    private static function attach_prefix_name($segment, $prefix_map, $context_map, $parent_key = null) {
-        if (empty($segment)) return '';
-
-        // ≫ の左側をキーとして抽出
-        $key = (mb_strpos($segment, '≫') !== false) ? mb_strstr($segment, '≫', true) : $segment;
-
-        // --- 1. prefix_map の判定 (優先) ---
-        // 子階層 (children) のチェック
-        if ($parent_key && isset($prefix_map[$parent_key]['children'][$key])) {
-            $name = $prefix_map[$parent_key]['children'][$key]['name'];
-            return "{$segment}〈{$name}〉";
-        }
-        // 親階層 (prefixes) のチェック
-        if (isset($prefix_map[$key])) {
-            $name = $prefix_map[$key]['name'];
-            return "{$segment}〈{$name}〉";
-        }
-
-        // --- 2. contextual_definitions の判定 ---
-        // 文脈 (parent_key) が一致し、かつ現在のキーがマッピングに含まれるか
-        echo $parent_key.'+';
-        var_dump($context_map[]);
-        if ($parent_key && isset($context_map[$parent_key])) {
-
-            foreach ($context_map[$parent_key] as $context_keys => $id_map) {
-                // "T,M" のようなカンマ区切りを配列化してチェック
-                $valid_keys = explode(',', $context_keys);
-                if (in_array($parent_key, $valid_keys) || true) { // 既に親が合致している前提
-
-                    // 現在のセグメント(key)が 001 などのIDとして定義されているか
-                    if (isset($id_map[$key])) {
-                        // 作品名は配列の0番目を取得
-                        $work_name = is_array($id_map[$key]) ? $id_map[$key][0] : $id_map[$key];
-                        return "{$segment}〈{$work_name}〉";
-                    }
-                }
-            }
-        }
-
-        return $segment;
     }
 
 

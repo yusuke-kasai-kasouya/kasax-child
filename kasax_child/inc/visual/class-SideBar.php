@@ -1,4 +1,8 @@
 <?php
+/**
+ * [Path]: inc\visual\class-SideBar.php
+ */
+
 namespace Kx\Visual;
 
 //use Kx\Core\SystemConfig as Su;
@@ -37,7 +41,7 @@ class SideBar {
 
         $content = self::build_system_ops_content($post_id,$path_index);
 
-        
+
 
         # スコアから不透明度を算出する関数
         $threshold = 50;

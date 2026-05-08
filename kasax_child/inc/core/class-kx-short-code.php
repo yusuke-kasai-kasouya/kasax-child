@@ -730,11 +730,28 @@ class ShortCode {
             $navigation .= " <a href='#{$anchor_id}' title='Jump to Preview below' style='margin-left:auto; text-decoration:none; font-size:0.8em; color:#666;'>[Preview ↓]</a>";
             $navigation .= "</li>";
 
+
+
+            if( $options['type'] === 'consolidator'){
+                // 第3引数を true にする、または専用の raw 取得関数を使う
+                $raw = file_get_contents($file_path);
+
+                // 文字コード変換（既存の code オプションを尊重）
+                if ($options['code'] !== 'auto' && $options['code'] !== 'utf-8') {
+                    $raw = mb_convert_encoding($raw, 'UTF-8', $options['code']);
+                }
+
+                $combined_content .= $raw . "\n";
+                continue;
+            }
+
+            /*
             if( $options['type'] === 'consolidator'){
                 $combined_content .= self::render_file_content_core($file_path, $options['code'], false);
                 $combined_content .= "\n";
                 continue;
             }
+            */
 
             // 2. 本文統合（セクション区切りをダークに）
             $combined_content .= "<section id='{$anchor_id}' style='margin-top:60px; border-top:1px solid #444; padding-top:30px;'>";

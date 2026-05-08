@@ -7,6 +7,7 @@
 namespace Kx\Core;
 
 use Su;
+use Dy;
 
 abstract class DyPathIndexHandler {
 
@@ -70,13 +71,22 @@ abstract class DyPathIndexHandler {
 
         $parent_parts = array_slice($parts, 0, -1);
 
+        // --- セグメント名の基本解決 ---
         $part_names = self::resolve_segment_names($parts);
-        $count = count($parts);
+        $count      = count($parts);
 
-        $name_count = $count - 1;
+        // デフォルトのラストパーツ名（解決済み配列の最後）
+        $last_part_name = ($count > 0) ? ($part_names[$count - 1] ?? '') : '';
 
-        $last_part_name = $part_names[$name_count] ?? '';
-
+        // --- 特殊階層（リレーション）の動的解決 ---
+        // 1. まず階層数が「3」であることを確認（リレーションの絶対条件）
+        // 2. その上で第3要素（インデックス2）が「＼」で始まるか確認
+        if ($count === 3 && isset($parts[0], $parts[2]) && mb_strpos($parts[2], '＼') === 0) {
+            $attr = Dy::get_char_attr($parts[0], $parts[2]);
+            if (!empty($attr['name'])) {
+                $last_part_name = $attr['name'];
+            }
+        }
 
 
         $entry = [
@@ -120,13 +130,11 @@ abstract class DyPathIndexHandler {
     }
 
     /**
-     * PostIDから接頭辞等のルールに基づき、システム上の属性（type, genre, flags）を特定する
-     * * @param int $post_id
-     * @return array {
-     * @var string $type  大カテゴリ（Μ, σ, κ等）
-     * @var string $genre 小カテゴリ（identifier_schema.jsonのキー名）
-     * @var array  $flags BOOLEAN_FLAGSに基づく有効なフラグ群
-     * }
+     * PostIDから接頭辞等のルールに基づき、システム上の属性（type, genre, markers）を特定する
+     *
+     * @param int    $post_id ポストID
+     * @param string $mode    動作モード（'maintenance'など）
+     * @return array{type: string, genre: string, markers: array<string, int>} 属性情報の連想配列
      */
     private static function identify_post_attributes($post_id , $mode = '') {
         $post_id = (int)$post_id;

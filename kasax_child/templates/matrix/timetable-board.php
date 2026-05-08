@@ -7,6 +7,7 @@
 
 use Kx\Component\PostCard;
 use Kx\Core\DynamicRegistry as Dy;
+use Kx\Core\KxDirector as kx;
 
 $post_id       = $matrix['post_id'] ?? [];
 $time_slots    = $matrix['time_slots'] ?? [];
@@ -88,11 +89,10 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
         <?php foreach ($time_slots as $slot): ?>
             <?php
                 $first_id  = null;
-                $slot_name = ''; // 初期化
+                $slot_name = '';
                 $row_ids   = [];
                 $slot_data = $grid[$slot] ?? [];
 
-                // この時間帯のデータ解析（スロット名特定とID収集）
                 foreach ($slot_data as $cell_data) {
                     if (!empty($cell_data['ids'])) {
                         if (!$first_id) {
@@ -103,23 +103,44 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
                     }
                 }
                 $ids_param = implode(',', array_unique($row_ids));
-            ?>
 
-            <div class="kx-time-divider" style="grid-column: 1 / span <?php echo $char_count; ?>;">
+                // 1回だけパースする
+                $timeline = \Kx\Utils\Time::parse_slug($slot ?? '', $hero_id);
+
+                $current_y = $timeline['age']  ?? '';
+                $current_m = $timeline['month'] ?? '';
+                $current_d = $timeline['day']   ?? '';
+
+                $divider_classes = ['kx-time-divider'];
+
+                if ($last_year !== '') {
+                    if ($current_y !== $last_year || $current_m !== $last_month) {
+                        $divider_classes[] = 'is-month-changed';
+                    } elseif ($current_d !== $last_day) {
+                        $divider_classes[] = 'is-date-changed';
+                    }
+                }
+
+                $last_year  = $current_y;
+                $last_month = $current_m;
+                $last_day   = $current_d;
+            ?>
+             <div class="<?= implode(' ', $divider_classes) ?>" style="grid-column: 1 / span <?php echo $char_count; ?>;">
                 <div class="kx-divider-inner" style="display: flex; justify-content: space-between; align-items: center; padding: 0 12px; width: 100%;">
 
                     <div class="divider-left" style="display: flex; align-items: center; gap: 10px;">
-                        <?php
-                            echo \Kx\Core\OutlineManager::add_from_loop($post_id, esc_html($slot_name), $post_id);
-                            $timeline = \Kx\Utils\Time::parse_slug($slot ?? '', $hero_id);
-                            $is_date_changed = \Kx\Utils\Time::check_date_changed($timeline);
+                         <?php
+                    echo \Kx\Core\OutlineManager::add_from_loop($post_id, esc_html($slot_name), $post_id);
 
-                            echo \Kx\Utils\KxTemplate::get('matrix/timeline-label', [
-                                'timeline'  => $timeline,
-                                'show_full' => $is_date_changed,
-                                'suffix'    => $slot_name
-                            ], false);
-                        ?>
+                    // すでに計算済みの $timeline を再利用
+                    $is_date_changed_flag = \Kx\Utils\Time::check_date_changed($timeline);
+
+                    echo \Kx\Utils\KxTemplate::get('matrix/timeline-label', [
+                        'timeline'  => $timeline,
+                        'show_full' => $is_date_changed_flag,
+                        'suffix'    => $slot_name
+                    ], false);
+                ?>
                     </div>
 
                     <div class="divider-right kx-batch-controls" style="display: flex; align-items: center; gap: 8px;">
@@ -132,7 +153,7 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
                         ?>
                         <div class="kx-batch-actions" style="display: flex; gap: 6px;">
                             <?php if ($ids_param): ?>
-                                <a href="<?= get_stylesheet_directory_uri(); ?>/pages/batch/batch-at-replace.php?ids=<?= $ids_param ?>"
+                                <a href="<?= get_stylesheet_directory_uri(); ?>/pages/batch/batch-at-replace.php?ids=<?= $ids_param ?>&title=<?= urlencode($slot_name) ?>"
                                    target="_blank" class="kx-action-link gray" title="ID一括置換">
                                     <span class="dashicons dashicons-admin-links"></span> Title
                                 </a>
@@ -165,9 +186,10 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
                     <?php else: ?>
                         <div class="kx-empty-cell">
                             <?php
+                                $new_slot_name = $slot_name ?: 'New';
                                 $root_id   = $char_info['root_id'];
-                                $new_title = Dy::get_title($root_id) . '≫' . $slot . '＠NEW';
-                                echo \Kx\Component\QuickInserter::render($root_id, $new_title, '', $char_no . '━' . $slot . '＠NEW', 'matrix');
+                                $new_title = Dy::get_title($root_id) . '≫' . $slot . '＠' . $slot_name;
+                                echo \Kx\Component\QuickInserter::render($root_id, $new_title, '', $char_no . '━' . $slot . '＠' . $slot_name, 'matrix');
                             ?>
                         </div>
                     <?php endif; ?>
@@ -230,7 +252,7 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
 
 /* 時間表記バー：全列を跨ぐ */
 .kx-time-divider {
-    background: #2c3e50;
+    background: hsla(0, 0%, 50%, 0.05);
     color: #fff;
     padding: 4px 15px;
     font-size: 0.85rem;
@@ -239,6 +261,9 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     position: sticky;
     left: 0;
 
+    border-bottom: 1px solid #333; /* 区切り線 */
+
+    padding: 4px 0;
 }
 
 /* コンテンツセル */
@@ -336,12 +361,7 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     /*background: transparent;*/
 }
 
-/* 親コンテナの調整 */
-.kx-time-divider {
-    border-bottom: 1px solid #333; /* 区切り線 */
-    background: hsla(0, 0%, 50%, 0.05);
-    padding: 4px 0;
-}
+
 
 /* 内部の1列レイアウト */
 .kx-divider-inner {
@@ -419,6 +439,34 @@ $hero_val   = $path_index['parts'][1]; // $default_hero
     -1px 1px 0 #000,  /* 左下 */
     1px -1px 0 #000,  /* 右上 */
     -1px -1px 0 #000; /* 左上 */
+}
+
+/* 日付が変わった時：青いライン */
+.kx-time-divider.is-date-changed {
+    border-top: 3px solid hsl(210, 72%, 59%);
+    margin-top: 15px;
+    background: linear-gradient(
+        to bottom,
+        hsl(210, 50%, 24%),
+        hsl(210, 29%, 24%)
+    ); /* 少し明るい青からベース色へ */
+}
+
+/* 月が変わった時：オレンジのライン */
+.kx-time-divider.is-month-changed {
+    border-top: 4px solid hsl(30, 80%, 52%);
+    margin-top: 30px;
+    background: linear-gradient(
+        to bottom,
+        hsl(30, 48%, 25%),
+        hsl(210, 29%, 24%)
+    ); /* オレンジがかった茶からベース色へ */
+}
+
+/* スクロール時にヘッダーのすぐ下に止まるように調整 */
+.kx-time-divider.is-date-changed,
+.kx-time-divider.is-month-changed {
+    top: 65px; /* 固定ヘッダーの高さ(28px付近)と重ならない位置に調整 */
 }
 
 </style>

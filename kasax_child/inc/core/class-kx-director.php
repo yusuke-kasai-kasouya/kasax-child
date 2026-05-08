@@ -6,12 +6,6 @@
 
 namespace Kx\Core;
 
-//use Kx\Core\ShortCode;      // ショートコード登録・実行
-
-//use Kx\Core\SystemConfig as Su;
-//use Kx\Core\DynamicRegistry as Dy;
-//use Kx\Utils\KxMessage as Msg;
-
 /**
  * KxDirector: kasax_child 統合指揮クラス
  * * 【LLM向】このクラスは全主要コンポーネントへの最短アクセスを提供する。
@@ -21,11 +15,14 @@ class KxDirector {
 
     /**
      * システム全体のショートコードを一括登録する
+     *
+     * @return void
      */
     public static function register_shortcodes() {
 
         add_shortcode( 'raretu',    [\Kx\Matrix\Orchestrator::class, 'shortcode' ] );
-        add_shortcode( 'kx_tp',     [\Kx\Core\TaskBoard::class,      'shortcode'] );
+        add_shortcode( 'kx_tp',     [\Kx\Utils\TaskBoard::class,      'shortcode'] );
+        add_shortcode( 'kx_ws',     [\Kx\Utils\WorkStation::class,    'shortcode'] );
         add_shortcode( 'anomaly',   [\Kx\Core\KxAiBridge::class,     'render_knowledge_gap_report'] );
         add_shortcode( 'kx',        [\Kx\Launcher\KxPostLauncher::class, 'run' ]);
 
@@ -46,30 +43,61 @@ class KxDirector {
         add_shortcode( 'full_scale_maintenance', [ShortCode::class, 'render_database_maintenance_panel'] );
     }
 
-
-    public static function get_ids_by_title(string $title) {
-        return \Kx\Database\dbkx0_PostSearchMapper::get_ids_by_title($title);
-    }
-
-    public static function get_short_code($post_id) {
-        return \Kx\Database\dbkx1_DataManager::get_short_code($post_id);
-    }
-
-    public static function get_raretu_code($post_id) {
-        return \Kx\Database\dbkx1_DataManager::get_raretu_code($post_id);
-    }
-
-
-    public static function is_type($type_name, $post_id = null, $logic = 'OR') {
-        return \Kx\core\TitleParser::is_type($type_name, $post_id, $logic);
-    }
-
-    public static function is_integrated($post_id): bool {
-        return \Kx\Utils\Toolbox::is_integrated($post_id);
+    /**
+     * タイトルから投稿IDのリストを取得
+     *
+     * @param string $title
+     * @return int[]
+     */
+    public static function get_ids_by_title(string $title): array {
+        return (array)\Kx\Database\dbkx0_PostSearchMapper::get_ids_by_title($title);
     }
 
     /**
-     * 指定タイトルの存在を確認し、リンクまたはインサーターを返す（汎用教養関数）
+     * 投稿に関連付けられたショートコードを取得
+     *
+     * @param int|string $post_id
+     * @return string
+     */
+    public static function get_short_code($post_id): string {
+        return (string)\Kx\Database\dbkx1_DataManager::get_short_code($post_id);
+    }
+
+    /**
+     * 投稿に関連付けられた羅列コードを取得
+     *
+     * @param int|string $post_id
+     * @return string
+     */
+    public static function get_raretu_code($post_id): string {
+        return (string)\Kx\Database\dbkx1_DataManager::get_raretu_code($post_id);
+    }
+
+    /**
+     * 投稿のタイプ判定
+     *
+     * @param string|array $type_name 単一の文字列または配列
+     * @param int|string|null $post_id
+     * @param string $logic 'OR' | 'AND'
+     * @return bool
+     */
+    public static function is_type($type_name, $post_id = null, string $logic = 'OR'): bool {
+        // $type_name の前の "string" を削除しました。これで配列も受け取れます。
+        return (bool)\Kx\core\TitleParser::is_type($type_name, $post_id, $logic);
+    }
+
+    /**
+     * 統合された記事かどうかを判定
+     *
+     * @param int|string $post_id
+     * @return bool
+     */
+    public static function is_integrated($post_id): bool {
+        return (bool)\Kx\Utils\Toolbox::is_integrated($post_id);
+    }
+
+    /**
+     * 指定タイトルの存在を確認し、リンクまたはインサーターを返す
      *
      * @param int    $base_post_id 起点となる投稿ID
      * @param string $target_title 検索対象のフルタイトル（階層パス込み）
@@ -77,17 +105,27 @@ class KxDirector {
      * @return string 生成されたHTML
      */
     public static function render_smart_link(int $base_post_id, string $target_title, array $args = []): string {
-        return \Kx\Utils\Toolbox::render_smart_link($base_post_id, $target_title, $args);
+        return (string)\Kx\Utils\Toolbox::render_smart_link($base_post_id, $target_title, $args);
     }
 
-    //dump
-    public static function dump($args) {
-        return \Kx\Utils\Toolbox::dump($args);
+    /**
+     * デバッグ用ダンプ出力
+     *
+     * @param mixed $args
+     * @return string
+     */
+    public static function dump($args): string {
+        return (string)\Kx\Utils\Toolbox::dump($args);
     }
 
-    //旧：kx_category_search
-    public static function category_search_box($args) {
-        return \Kx\Utils\Toolbox::category_search_box($args);
+    /**
+     * カテゴリ検索ボックスの描画
+     *
+     * @param array $args
+     * @return string
+     */
+    public static function category_search_box(array $args): string {
+        return (string)\Kx\Utils\Toolbox::category_search_box($args);
     }
 
 }

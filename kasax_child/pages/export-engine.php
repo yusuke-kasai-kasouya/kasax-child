@@ -12,7 +12,7 @@ if ( !current_user_can('edit_posts') ) {
 $source_id   = isset($_POST['post_id']) ? (int)$_POST['post_id'] : 0;
 $post_id     = $source_id;
 $template_id = $_POST['template_id'] ?? 'simple';
-$ai_select   = $_POST['ai_select'] ?? 'gemini';
+$ai_select   = $_POST['ai_select'] ?? 'no_split_mode';
 
 if (!$source_id) {
     wp_die('IDが指定されていません。');

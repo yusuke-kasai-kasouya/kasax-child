@@ -6,64 +6,11 @@
 
 /*
     使い方。
-
     \Kx\Utils\KxMessage::error("IDが取得できません3。");
 	\Kx\Utils\KxMessage::warn("キャッシュを更新しました。");
 	\Kx\Utils\KxMessage::caution("キャッシュを更新しました。");
 	\Kx\Utils\KxMessage::notice("キャッシュを更新しました。");
 	\Kx\Utils\KxMessage::info("キャッシュを更新しました。");
-
-    use \Kx\Utils\KxMessage as Msg;
-    Msg::info("キャッシュを更新しました。");
-
-	// 現在の投稿IDを取得して変数に入れる
-    $test_id = null;
-
-    if (is_singular()) {
-        // ContextManager::sync($test_id); // 既存処理
-    }
-
-    // 1. エラーの実験 (IDが取得できない場合)
-    if (empty($test_id)) {
-        \Kx\Utils\KxMessage::error("IDが取得できません。");
-
-    }
-
-	// 1. エラーの実験 (IDが取得できない場合)
-    if (empty($test_id)) {
-        \Kx\Utils\KxMessage::error("IDが取得できません2。");
-
-    }
-
-	// 1. エラーの実験 (IDが取得できない場合)
-    if (empty($test_id)) {
-        \Kx\Utils\KxMessage::error("IDが取得できません3。");
-		\Kx\Utils\KxMessage::info("キャッシュを更新しました。");
-
-    // 複数出すテスト
-    \Kx\Utils\KxMessage::info("データベースの同期が完了しました。");
-
-    }
-
-
-	// 1. エラーの実験 (IDが取得できない場合)
-    if (empty($test_id)) {
-        \Kx\Utils\KxMessage::error([
-    'Error-NO' => 'E-001',
-    'TargetID' => $test_id,
-    'Status'   => 'Missing Metadata',
-    'Details'  => ['missing' => 'title_parser', 'code' => 404]
-    ]);
-
-    }
-    return;
-    // 2. 警告の実験
-    if ($test_id > 100) { // 実験用に数値を下げています
-        \Kx\Utils\KxMessage::warn("ID:{$test_id} はテスト対象のIDです。");
-    }
-
-    // 3. Infoの実験
-    \Kx\Utils\KxMessage::info("KxMessageシステムの接続テストに成功しました。");
 */
 
 namespace Kx\Utils;

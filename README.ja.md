@@ -105,7 +105,7 @@ ID指定の内部リンクを生成。パラメータ `t`（タイプ）を切�
 | class-kx-content-filter.php | `ContentFilter` | `the_content` フックを介したGhost召喚やMarkdown変換の制御。 |
 | class-kx-Content-Processor.php | `ContentProcessor` | Markdownパース、独自記号変換を一括で行う本文変換エンジン。 |
 | class-kx-context_manager.php | `ContextManager` | 階層解析、検索テーブル同期などを一元管理する司令塔。 |
-| class-kx-director.php | `KxDirector` | システム全体のショートコード登録と主要コンポーネントの中継。 |
+| class-kx-director.php | `KxDirector` | システム全体のショートコード登録（raretu, kx_tp, kx_ws等）と主要コンポーネントの中継。 |
 | class-kx-dy-content-handler.php | `DyContentHandler` | コンテンツ生データとキャッシュの補充を一元制御。 |
 | class-kx-dy-handler.php | `DyDomainHandler` | 外部システム（Laravel等）との連携監視、ドメイン全般の管理。 |
 | class-kx-dynamicRegistry.php | `DynamicRegistry` | 実行メモリ内でのデータ管理を一元化するシステム全体のハブ。 |
@@ -158,7 +158,8 @@ ID指定の内部リンクを生成。パラメータ `t`（タイプ）を切�
 | ファイル名 | クラス名 | 説明 |
 | --- | --- | --- |
 | class-kx-message.php | `KxMessage` | システム実行中のエラー・通知を一元管理するユーティリティ。 |
-| class-kx-taskboard.php | `TaskBoard` | 作業支援用ダッシュボードインターフェースの生成。 |
+| class-kx-workstation.php | `WorkStation` | コンテンツの存在有無を動的にスキャンし、状況に応じたUI（新規作成・既存リスト）を提供する高度な作業支援ボード。 |
+| class-kx-taskboard.php | `TaskBoard` | 標準的なコンテキスト（検索、メニュー等）に応じたダッシュボード生成。 |
 | class-kx-template.php | `KxTemplate` | ロジックと表示を分離して読み込むテンプレートエンジン。 |
 | class-kx-time.php | `Time` | タイムゾーン制御、時間差算出、年齢・日付変更検知。 |
 | class-kx-Toolbox.php | `Toolbox` | デバッグ出力、EPUB変換、物理保存等の多目的ツール。 |
@@ -210,4 +211,3 @@ ID指定の内部リンクを生成。パラメータ `t`（タイプ）を切�
 制作者は日本語を母国語としています。英語での問い合わせも翻訳ツールを介して対応可能ですが、日本語でいただけるとよりスムーズな回答が可能です。
 
 > **Note:** 本ドキュメントは、内部コード構造を正確に反映するためAI（Gemini）の支援を受けて作成されました。
-

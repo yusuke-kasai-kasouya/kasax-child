@@ -65,7 +65,7 @@ $ids_raw = implode(',', $ids ?: []);
                 <label style="color:#ffcc00; font-weight:bold;">新しい時間スロットを入力:</label><br>
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <span style="font-size: 1.5rem;">≫</span>
-                    <input type="text" id="new_time_val" placeholder="例: 12-16b" required autofocus style="font-size: 1.2rem;">
+                    <input type="text" id="new_time_val" value="<?= esc_attr($time) ?>" required autofocus style="font-size: 1.2rem;">
                     <span style="font-size: 1.5rem;">＠</span>
                 </div>
                 <input type="hidden" name="title_to" id="actual_title_to" value="">

@@ -27,9 +27,9 @@ $path_index = Dy::get_path_index($target_id);
 
 //echo kx_dump($path_index);
 
-$post_titile_parent_dir = $path_index['parent_path'];// 親階層のパス。≫をつける。
-$post_titile_time_slug  = $path_index['time_slug'];   // 時間ベースの識別子
-$post_titile_at = $path_index['at_name']??'';
+$post_title_parent_dir = $path_index['parent_path'];// 親階層のパス。≫をつける。
+$post_title_time_slug  = $path_index['time_slug'];   // 時間ベースの識別子
+$post_title_at = $path_index['at_name']??'';
 
 
 if($edit_id !== 0){
@@ -40,7 +40,7 @@ if($edit_id !== 0){
 }else{
     $post_content = '＿' . Time::format() . '＿';
 
-    $post_titile_at .= '（新規追加）';
+    $post_title_at .= '（新規追加）';
 
     $add_style = "border: 3px solid red";
 }
@@ -66,7 +66,7 @@ if( $post_id !== $edit_id){
                 <div class="ed-field-row">
                     <label class="ed-label" for="ed-title">親階層：</label>
                     <input type="text" name="post_title_parent_dir" id="ed-title"
-                        value="<?= esc_attr($post_titile_parent_dir) ?>"
+                        value="<?= esc_attr($post_title_parent_dir) ?>"
                         placeholder="親階層" tabindex="1">
                 </div>
             </div>
@@ -74,13 +74,14 @@ if( $post_id !== $edit_id){
 
         <div class="ed-title-row" style="<?= $row_style ?>">
             <input type="text" name="post_title_time_slug" class="ed-input-slug"
-                value="<?= esc_attr($post_titile_time_slug) ?>"
+                value="<?= esc_attr($post_title_time_slug) ?>"
                 placeholder="00-00" tabindex="1">
+
 
             <span class="ed-at-mark">＠</span>
 
             <input type="text" name="post_title_at" class="ed-input-at"
-                value="<?= esc_attr($post_titile_at) ?>"
+                value="<?= esc_attr($post_title_at) ?>"
                 placeholder="タイトル" tabindex="1">
 
             <button type="submit" class="ed-btn-save-top ed-icon" tabindex="2" onclick="closeEditorImmediate()">⬇</button>
@@ -151,7 +152,7 @@ body {
 
 /* タイムスラグ（幅を限定） */
 .ed-input-slug {
-    width: 100px;
+    width: 120px;
     text-align: center;
 }
 
@@ -295,9 +296,6 @@ body {
     font-size: 14px;
 }
 
-
-
-.ed-input-slug { width: 80px; text-align: center; }
 .ed-input-at { flex: 1; }
 .ed-title-row input { background: #333; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 3px; }
 
@@ -371,28 +369,43 @@ body {
 
     function closeEditorImmediate() {
         try {
-            // 1. 親タイトルの即時書き換え（先ほどの成功ロジックを注入）
-        var topDoc = window.top.document;
-        var tid = "<?= $post_id ?>"; // PHPから渡されたターゲットID
+            var topDoc = window.top.document;
+            var tid = "<?= $post_id ?>"; // ターゲットID
 
-        // 入力値を取得
-        var title = document.querySelector('input[name="post_title_at"]').value || '';
+            // 1. タイトルの即時書き換え
+            var title = document.querySelector('input[name="post_title_at"]').value || '';
+            var titleTargets = topDoc.querySelectorAll('.kx-target-post-title-' + tid);
+            titleTargets.forEach(function(el) {
+                el.innerText = '✅' + title + ' 🟢';
+                el.style.color = '#00ff00';
+                el.style.fontWeight = 'bold';
+            });
 
-        var targets = topDoc.querySelectorAll('.kx-target-post-title-' + tid);
-        targets.forEach(function(el) {
-            el.innerText = '✅' + title + ' 🟢';
-            el.style.color = '#00ff00';
-            el.style.fontWeight = 'bold';
-        });
+            // 2. コンテンツ（本文）の即時書き換え
+            var content = document.getElementById('ed-content').value;
+            var contentTargets = topDoc.querySelectorAll('.kx-target-post-content-' + tid);
 
-        // 2. モーダルを閉じる等の既存処理
-        if (window.frameElement) {
-            window.parent.jQuery('#loader').show(); // 親のローダー表示
-            const modal = window.frameElement.closest('.kx-inline-editor');
-            if (modal) {
-                modal.style.display = 'none'; // エディタを隠す
+            contentTargets.forEach(function(el) {
+                // 状態を示すクラスを付与（親のCSSで色を定義していれば反映される）
+                el.classList.add('is-saving-temp');
+
+                // 一時的なテキスト反映
+                el.innerText = "🟥　保存中\n" + content + "🟥";
+                el.style.whiteSpace = 'pre-wrap';
+                //el.style.color = 'hsl(120, 100%, 95%)'; // 保存中であることを示す色（任意）
+                //el.style.opacity = '0.9';
+            });
+
+            // 3. モーダルを閉じる等の既存処理
+            if (window.frameElement) {
+                if (window.parent.jQuery && window.parent.jQuery('#loader').length) {
+                    window.parent.jQuery('#loader').show(); // 親のローダー表示
+                }
+                const modal = window.frameElement.closest('.kx-inline-editor');
+                if (modal) {
+                    modal.style.display = 'none'; // エディタを即座に隠す
+                }
             }
-        }
         } catch (e) {
             console.error("Immediate close failed", e);
         }

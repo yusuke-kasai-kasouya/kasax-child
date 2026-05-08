@@ -480,7 +480,7 @@ class Kx_Consolidator {
         $html .= '<div style="margin-bottom:10px;padding-left: 10px;">';
         $html .= '<label style="font-size:11px; display:block; color:#888;">分割形式:</label>';
         $html .= '<select name="ai_select" style="font-size:12px; padding:2px; width:220px;">';
-        $default_ai = $args['ai_select'] ?? 'gemini';
+        $default_ai = $args['ai_select'] ?? 'no_split_mode';
         foreach ($ai_models as $key => $spec) {
             $selected_ai = ($key === $default_ai) ? ' selected' : '';
             $display_name = $spec['name'] ?? $key;
@@ -526,8 +526,6 @@ class Kx_Consolidator {
         $html .= '</select>';
         $html .= '</div>';
 
-
-
         $html .= '<div style="padding-left: 20px;"><button type="submit" class="button button-primary">' . esc_html($label) . '</button></div>';
         $html .= '</form>';
 
@@ -553,7 +551,7 @@ class Kx_Consolidator {
 
         if ( Tp::is_type('phil_xampp_driven', $post_id)) {
             $_promptID = 'simple';
-        }else if ( Tp::is_type('strat_sales_policie_detail', $post_id)) {
+        }else if ( Tp::is_type('strat_sales_policie_root', $post_id)) {
             $_promptID = '10104';
             $_color = 'hsl(270, 100%, 50%)'; // マゼンタ系
             $format = 'md';
@@ -597,7 +595,7 @@ class Kx_Consolidator {
             'type'  => $type_value,
             'color' => $_color,
             'format' => $format,
-            'ai_select' => 'gemini' // デフォルトAI
+            'ai_select' => 'no_split_mode' // デフォルトAI
         ];
     }
 
@@ -640,16 +638,16 @@ class Kx_Consolidator {
             return false;
         }
 
-        if($args['ai_select'] == 'default'){
+        if($args['ai_select'] == 'no_split_mode'){
             return false;
         }
 
         // 1. JSON設定から制限値を取得
         $specs = Su::get('consolidator')['ai_model_specs'] ?? [];
-        $ai_type = $args['ai_select'] ?? 'gemini';
+        $ai_type = $args['ai_select'] ?? 'no_split_mode';
 
-        // 2. 指定されたモデルの設定を取得（なければdefault、それもなければ20000）
-        $spec = $specs[$ai_type] ?? ($specs['default'] ?? ['max_length' => 20000]);
+        // 2. 指定されたモデルの設定を取得（なければno_split_mode、それもなければ20000）
+        $spec = $specs[$ai_type] ?? ($specs['no_split_mode'] ?? ['max_length' => 20000]);
         $max_len = (int)$spec['max_length'];
 
         // 3. 現在のテキスト長を取得（マルチバイト対応）
@@ -711,7 +709,7 @@ class Kx_Consolidator {
             'prompt_config'  => $config['prompts'][$template_id] ?? [],
             'default_config' => $config['prompts']['default'] ?? [],
             'important'      => $config['important'] ?? [],
-            'ai_specs'       => $config['ai_model_specs'][$args['ai_select'] ?? 'gemini'] ?? $config['ai_model_specs']['default'],
+            'ai_specs'       => $config['ai_model_specs'][$args['ai_select'] ?? 'no_split_mode'] ?? $config['ai_model_specs']['no_split_mode'],
             'template_id'    => $template_id
         ];
     }

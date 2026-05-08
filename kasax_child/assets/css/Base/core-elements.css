@@ -95,9 +95,12 @@ ul li li li li:before {
 }
 
 
-ol li li			{ margin: 0 0 0 0em;}
-ol li li li { margin: 0 0 0 0px;}
-ol li li li li { margin: 0 0 0 0px;}
+ul li li	{ list-style-type: circle;}
+ul li li li { list-style-type: square;  }
+
+ol li li		  { margin: 0 0 0 0em;}
+ol li li li       { margin: 0 0 0 0px;}
+ol li li li li    { margin: 0 0 0 0px;}
 ol li li li li li { margin: 0 0 0 0px;}
 
 
@@ -107,9 +110,18 @@ ol li li li li { list-style-type: circle; }
 ol li li li li li { list-style-type: disc;  }
 
 
+/* Wordpressのメニュー全体のリスト記号を消す */
+.menu,
+.menu-item,
+.sub-menu {
+    list-style: none !important;
+    list-style-type: none !important;
+}
+
+
 /* 3階層目以降 */
 
-li {	margin: 3px 0 0 0;}
+li { margin: 3px 0 0 0;}
 
 li.cat-item .children
 {
@@ -211,7 +223,7 @@ h4:before {
 h5:before {
 	opacity: .3;
 	font-size:8.5pt;
-	content:"□";
+	content:"✚";
 }
 
 h6:before {

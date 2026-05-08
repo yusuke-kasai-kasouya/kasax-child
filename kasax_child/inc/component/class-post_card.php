@@ -13,14 +13,18 @@ use Kx\Utils\KxTemplate;
 class PostCard {
 
     /**
-     * Undocumented function
+     * ポストカードまたはライン形式のコンポーネントをレンダリングする
      *
+     * @param int    $post_id     投稿ID
+     * @param string $mode        表示モード ('standard', 'line', 'blind' 等)
+     * @param array  $extra_slots 追加で表示するスロット配列
+     * @return string レンダリングされたHTML文字列
      */
     public static function render($post_id, $mode = 'standard', $extra_slots = []) {
         $cache = Dy::get_path_index($post_id);
 
         $last_name = $cache['last_part_name'];
-        $last_name = $last_name? '：'.$last_name : '';
+        $last_name = $last_name ? '：'.$last_name : '';
 
         $modified_time = $cache['modified'] ?? '';
 
@@ -84,8 +88,14 @@ class PostCard {
         return KxTemplate::get($template_path, $args, false);
     }
 
+
+
     /**
-     * ポストの属性に基づいたスロット（メタ情報タグ）の生成
+     * ポストの属性に基づいたスロット（メタ情報タグ）の配列を生成する
+     *
+     * @param int    $post_id 投稿ID
+     * @param string $mode    表示モード
+     * @return array スロット（HTML文字列）の配列
      */
     private static function get_slots($post_id, $mode) {
         $slots = [];
@@ -119,14 +129,16 @@ class PostCard {
             $slots[] = "<span style='color:red;'>━━子階層あり━━</span>";
         }
 
-
-
         return $slots;
     }
 
 
     /**
-     * 投稿内容から抜粋（または全文化）を取得する
+     * 投稿内容から整形された抜粋（または全文）を取得する
+     *
+     * @param int  $post_id           投稿ID
+     * @param bool $full_content_mode 全文モードフラグ
+     * @return string 整形済みコンテンツ（HTML）
      */
     private static function get_formatted_excerpt($post_id, $full_content_mode = false) {
         global $post, $more;
@@ -160,7 +172,10 @@ class PostCard {
 
 
     /**
-     * DBから直接、最初の1行のみを取得する
+     * 投稿本文からタグを除去し、最初の1行のみをプレーンテキストで取得する
+     *
+     * @param int $post_id 投稿ID
+     * @return string 抽出された最初の1行
      */
     private static function get_first_line_plain($post_id) {
         $post = get_post($post_id);
