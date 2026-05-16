@@ -88,6 +88,7 @@ class Orchestrator {
 
             // ids も virtuals も空、かつ特殊マトリックスでもない場合のみエラー
             if (empty($ids) && empty($virtuals) && !$is_special_matrix) {
+
                 $title = $this->origin_path['full'] ?? 'Undefined Path';
                 $str = "Matrix：idsおよび仮想階層なし。$title";
                 Msg::error($str);

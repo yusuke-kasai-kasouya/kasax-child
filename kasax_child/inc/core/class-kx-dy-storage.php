@@ -22,6 +22,10 @@ class DyStorage {
 
     /**
      * 指定ドメインのデータを上書き保存する
+     *
+     * @param string $domain  保存先のドメインキー（flags, content 等）
+     * @param mixed  $payload 保存するデータ（通常はドメイン全量の配列）
+     * @return void
      */
     public static function store(string $domain, $payload): void {
         self::$data[$domain] = $payload;

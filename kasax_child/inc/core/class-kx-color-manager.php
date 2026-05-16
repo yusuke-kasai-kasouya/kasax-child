@@ -2,8 +2,8 @@
 /**
  *[Path]: inc/core/class-kx-color-manager.php
  */
-
 namespace Kx\Core;
+
 use Kx\Core\SystemConfig as Su;
 use Kx\Core\DynamicRegistry as Dy;
 use Kx\Core\TitleParser as Tp;
@@ -11,11 +11,11 @@ use Kx\Core\TitleParser as Tp;
 class ColorManager {
 
     /**
-     * Undocumented function
+     * ポストIDから配色設定を取得する
      *
-     * @param [type] $post_id
-     * @param string $type
-     * @return void
+     * @param int    $post_id 投稿ID
+     * @param string $type    表示コンテキストタイプ
+     * @return array 配色設定配列
      */
     public static function get_by_id($post_id, $type = 'std') {
 
@@ -23,12 +23,12 @@ class ColorManager {
         return self::resolve($title, $type, $post_id);
     }
 
-    /**
-     * Undocumented function
+     /**
+     * コンテキスト（タイトル文字列）から配色設定を取得する
      *
-     * @param [type] $title
-     * @param string $type
-     * @return void
+     * @param string $title 判定対象のタイトル文字列
+     * @param string $type  表示コンテキストタイプ
+     * @return array 配色設定配列
      */
     public static function get_by_context($title, $type = 'std') {
 
@@ -37,7 +37,7 @@ class ColorManager {
 
     /**
      * タイトルや投稿ID、表示タイプに基づいて、最適な配色設定（CSS変数とクラスセット）を解決します。
-     * * [ロジック概要]:
+     * [ロジック概要]:
      * 1. visual_config.json の 'contexts' から固定プリセットを読み込み CSS変数化。
      * 2. タイトルの単語判定（match_context）により動的な Hue（色相）と Tone（トーン）を決定。
      * 3. $type（表示場所）に応じた追加スタイルとクラスセットを抽出・合成。
@@ -116,10 +116,13 @@ class ColorManager {
         ];
     }
 
-
-
     /**
      * タイトルから色相とトーンを導き出すエンジン
+     *
+     * @param string|null $title   タイトル
+     * @param array       $config  配色設定
+     * @param int|null    $post_id 投稿ID
+     * @return array ['hue' => int, 'tone' => string]
      */
     private static function match_context($title, $config, $post_id = null) {
         // 0. 初期値（どこにも該当しない場合）
@@ -205,13 +208,13 @@ class ColorManager {
         return $res;
     }
 
-
-
     /**
      * キャラクターコードから色相を導き出すエンジン
-     * * @param string $work_id   作品ID（例: "04", "10"）
-     * @param string $char_code 抽出されたキャラコード（例: "001", "15arg"）
-     * @param array  $config    visual_config の配列
+     *
+     * @param string $work_id   作品ID（例: "04", "10"）
+     * @param string $char_code キャラクタコード（例: "001"）
+     * @param array  $config    配色設定
+     * @return array ['hue' => int, 'tone' => string]
      */
     private static function match_context_character($work_id, $char_code, $config) {
 
@@ -245,9 +248,14 @@ class ColorManager {
         return $res;
     }
 
-
     /**
-     * 接頭辞と階層パーツの位置に基づく書き換え判定（一致パターン拡張版）
+     * 接頭辞と階層パーツの位置に基づく書き換え判定
+     *
+     * @param string $prefix      タイトルの先頭一文字
+     * @param array  $parts       階層パーツの配列
+     * @param array  $config      配色設定
+     * @param array  $current_res 現在の解決結果
+     * @return array 更新後の解決結果
      */
     private static function match_context_parts($prefix, $parts, $config, $current_res) {
         $logic_list = $config['context_parts_logic'] ?? [];
@@ -295,7 +303,11 @@ class ColorManager {
 
     /**
      * タイトル全体の特定単語に基づくグローバル書き換え判定
-     * 階層位置や接頭辞を無視して、キーワードの有無で最終決定を行う
+     *
+     * @param string $title       フルタイトル
+     * @param array  $config      配色設定
+     * @param array  $current_res 現在の解決結果
+     * @return array 更新後の解決結果
      */
     private static function match_context_global($title, $config, $current_res) {
         $global_logic = $config['global_word_logic'] ?? [];
@@ -334,6 +346,10 @@ class ColorManager {
 
     /**
      * 表示タイプに応じたCSSクラスセットを返す
+     *
+     * @param string $type   コンテキストタイプ
+     * @param array  $config 配色設定
+     * @return array|string  CSSクラスの配列または文字列
      */
     private static function get_traits_by_type($type, $config) {
         $type_traits = $config['type_traits'] ?? [];

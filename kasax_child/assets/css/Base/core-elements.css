@@ -15,64 +15,38 @@ p {
 }
 
 pre {
-		margin : 0px 5px 5px 30px;
+	margin : 0px 5px 5px 30px;
     padding: 8px; /* 内側の余白 */
-		border-radius: 10px;
-		white-space: pre-wrap; /* 長いコードを折り返す */
+	border-radius: 10px;
+	white-space: pre-wrap; /* 長いコードを折り返す */
 }
 
 
-ul p,ol p {
-  margin: 0;
-}
-
-
-/* ..【ol 数字】*/
-
-
+/* ol ul*/
 
 ol,ul{
-	margin: 0 0 0 30px;
+	margin: 0 0 0 45px;
 }
+
 ul ul,ol ol
 {
 	margin-left: 1em;
 }
 
+ul p,ol p {
+  	margin: 0;
+}
 
-/* .【ui・ol・li】 */
+
 .entry-content ul ,.entry-content  ol
 {
 	padding: 0em 0em 0.33em 0em;	/*必要。Wordpressに基礎設定がある。*/
 }
 
-/* ..【ui】
-ul{
-	margin: 0 0 20px 1.5em;
-}
-	*/
-
-
 
 ul li{
 	margin-top: 0px; /* 10px の余白を追加 */
 }
-
-
-.__kxol__ ul,.__kxol__ ol {
-	line-height: 160%;
-	padding: 0em 0em 0.33em 0em;	/*必要。Wordpressに基礎設定がある。*/
-	margin: 0 0 0 0;
-}
-
-.__kxol__ ul li li{
-		margin-left: 5px; /* 10px の余白を追加 */
-}
-
-.__kxol__ ul li{
-	margin-top: 0px; /* 10px の余白を追加 */
-}
-
 
 
 ul li:before {
@@ -95,12 +69,18 @@ ul li li li li:before {
 }
 
 
-ul li li	{ list-style-type: circle;}
-ul li li li { list-style-type: square;  }
+ul li li	      { list-style-type: circle;}
+ul li li li       { list-style-type: square;  }
 
+ul li,
+ol li			  { margin: 0 0 0 0em;}
+ul li li,
 ol li li		  { margin: 0 0 0 0em;}
+ul li li li,
 ol li li li       { margin: 0 0 0 0px;}
+ul li li li li,
 ol li li li li    { margin: 0 0 0 0px;}
+ul li li li li li,
 ol li li li li li { margin: 0 0 0 0px;}
 
 
@@ -110,18 +90,10 @@ ol li li li li { list-style-type: circle; }
 ol li li li li li { list-style-type: disc;  }
 
 
-/* Wordpressのメニュー全体のリスト記号を消す */
-.menu,
-.menu-item,
-.sub-menu {
-    list-style: none !important;
-    list-style-type: none !important;
+li {
+	margin: 3px 0 0 0;
 }
 
-
-/* 3階層目以降 */
-
-li { margin: 3px 0 0 0;}
 
 li.cat-item .children
 {
@@ -130,7 +102,13 @@ li.cat-item .children
 	margin-left: 1em !important;
 }
 
-
+/* Wordpressのメニュー全体のリスト記号を消す */
+.menu,
+.menu-item,
+.sub-menu {
+    list-style: none !important;
+    list-style-type: none !important;
+}
 
 
 h1

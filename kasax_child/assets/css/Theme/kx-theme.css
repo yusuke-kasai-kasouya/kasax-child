@@ -1,39 +1,11 @@
 @charset "utf-8";
 
-/*	白	*/
-.__a_white a,
-.__a_white a:link,
-.__a_white a:visited,
-.__a_white{
-	color:hsl(0,0%,85%);
-}
 
-.__kxol_side a:hover {
-  background-color: hsla(180,63%,20%,1);
 
-}
-
-.__title_tikan_white{
-	background-color:#555;
-
-	box-shadow:
-		2px 0px 2px hsla(0,0%,0%,0.4),
-		-2px 0px 2px hsla(0,0%,0%,0.4);
-}
-
-/*.hr_side,*/
+/* side */
 .__side_search,
 .__kx_search{
 	border-bottom: solid #444;
-}
-
-hr.hr_side{
-	border: none;
-	background-color: #444;
-	border-width: 1px 0 0 0;
-	border-top: solid;
-	border-color: black;
-
 }
 
 .answer.kx-sidebar{
@@ -124,7 +96,7 @@ h6{
 	color:hsl(300,100%,50%);
 }
 
-.__kxol_box,
+
 body {
 	color: hsl(0,0%,85%);
 }
@@ -132,7 +104,6 @@ body {
 
 /*	基本関係	*/
 /*body,*/
-.__kxol_box,
 ::-webkit-scrollbar-track {
 	background-color: hsl(0,0%,5%);
 }
@@ -143,13 +114,7 @@ body {
 
 
 
-a.__color_normal,
-a:link.__color_normal,
-.__color_normal a,
-.__color_normal a:link,
-.__color_normal{
-	color: hsl(0,0%,85%);
-}
+
 
 .__a_violet_kx a,
 .__a_violet_kx a:link,
@@ -163,12 +128,8 @@ a:link.__color_normal,
 .__a_inversion a,
 .__a_inversion a:link,
 .__a_inversion a:visited,
-.__a_inversion,
-.__color_inversion a:link,
-.__color_inversion a,
-a.__color_inversion,
-a:link.__color_inversion,
-.__color_inversion{
+.__a_inversion
+{
 	color: #111;
 }
 
@@ -196,11 +157,7 @@ a:link.__color_inversion,
 hr,
 hr._kx,
 .__hr_more,
-.content-area,
-.__navi_back_l2,
-.__error_main_red,
-.__error_main_blue,
-.__error_main_darkviolet  {
+.content-area{
   background-color: hsl(0,0%,7.5%);
 }
 

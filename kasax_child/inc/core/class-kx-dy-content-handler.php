@@ -24,7 +24,7 @@ class DyContentHandler {
 
     /**
      * キャッシュからデータを取得する。存在しない場合は自動的に補充する。
-     * * @param int    $post_id    投稿ID
+     * @param int    $post_id    投稿ID
      * @param string $sub_key    特定のサブキーのみ返したい場合に指定
      * @return mixed             指定されたデータ、または content[$post_id] 配列全体
      */

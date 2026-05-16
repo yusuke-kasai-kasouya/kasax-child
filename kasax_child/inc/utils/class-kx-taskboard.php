@@ -115,10 +115,12 @@ class TaskBoard {
         foreach ($structured_data as $key => $data) {
             $anchor_id = "section-" . str_replace('section_', '', (string)$key);
 
+            // ① アウトライン抽出機構への登録
             if (!empty($data['use_outline'])) {
                 $html .= (string)\Kx\Core\OutlineManager::add_from_loop(self::$shortcode_host_id, (string)($data['title'] ?? ''), $anchor_id);
             }
 
+            // ② ジャンプ先となるHTML要素（アンカーID）の出力
             $html .= sprintf('<section id="%s" class="taskboard-unit">', esc_attr($anchor_id));
             $html .= self::render_component($data);
             $html .= '</section>';

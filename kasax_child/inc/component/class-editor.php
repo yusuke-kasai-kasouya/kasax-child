@@ -2,7 +2,6 @@
 /**
  * [Path]: inc\component\class-post_card.php
  */
-
 namespace Kx\Component;
 
 //use Kx\Core\SystemConfig as Su;
@@ -11,10 +10,17 @@ use Kx\Core\DynamicRegistry as Dy;
 use Kx\Utils\KxTemplate;
 
 
+
 class Editor {
 
     /**
      * エディター（モーダル）のオーケストレーター
+     *
+     * @param int    $post_id     投稿ID
+     * @param string $editor_mode モード（update, insert, ghost 等）
+     * @param string $label       ボタンラベル
+     * @param array  $options     追加オプション
+     * @return string             生成されたHTMLコード
      */
     public static function open($post_id, $editor_mode = 'update', $label = 'Edit', $options = []) {
 
@@ -53,6 +59,12 @@ class Editor {
 
     /**
      * 新規作成用の引数組み立て（内部処理）
+     *
+     * @param int    $post_id
+     * @param string $editor_mode
+     * @param string $label
+     * @param array  $options
+     * @return array テンプレートに渡す引数配列
      */
     private static function prepareInsertArgs($post_id,$editor_mode, $label, $options) {
         $path_index = Dy::get_path_index($post_id);
@@ -74,6 +86,12 @@ class Editor {
 
     /**
      * 更新用の引数組み立て（内部処理）
+     *
+     * @param int    $post_id
+     * @param string $editor_mode
+     * @param string $label
+     * @param array  $options
+     * @return array テンプレートに渡す引数配列
      */
     private static function prepareUpdateArgs($post_id, $editor_mode, $label, $options) {
 
@@ -84,6 +102,7 @@ class Editor {
         // DynamicRegistryからGhost情報を取得
         $ghost_to   = Dy::get_content_cache($post_id, 'ghost_to');
         $ghost_from = Dy::get_content_cache($post_id, 'ghost_from');
+        $consolidated_to = Dy::get_content_cache($post_id, 'consolidated_to');
 
         if($editor_mode ==='header'){
             $label = mb_strimwidth(($path_index['at_name'] ?? ''), 0, 60, '...', 'UTF-8')??'Edit';
@@ -124,6 +143,12 @@ class Editor {
             $label .= '&nbsp;&nbsp;G'.count($ghost_from);
         }
 
+        if ($consolidated_to) {
+            $info_label .= 'consolidated_to＋';
+            $info_links[] = self::get_consolidated_link($consolidated_to);
+            $label .= '&nbsp;&nbsp;T';
+        }
+
 
 
         return [
@@ -144,6 +169,9 @@ class Editor {
 
     /**
      * 要件3: ghost_from の複数のポストへの「パーマリンク」を生成する
+     *
+     * @param int[]|mixed $ids 投稿IDの配列
+     * @return string[] リンクタグ(<a>)の配列
      */
     private static function generate_ghost_from_links($ids) {
         if (!is_array($ids)) return [];
@@ -162,6 +190,10 @@ class Editor {
 
     /**
      * WP管理画面の「編集ページ」URLを生成するヘルパー
+     *
+     * @param int    $id     投稿ID
+     * @param string $prefix ラベルの接頭辞
+     * @return string        <a>タグ、または空文字
      */
     private static function get_admin_edit_link($id, $prefix) {
         $url = get_edit_post_link($id);
@@ -170,7 +202,15 @@ class Editor {
         return "<a href='{$url}' target='_blank' rel='noopener' title='Edit Post'>{$prefix}(#{$id})</a>";
     }
 
-    public static function render() {
-        // ...
+    /**
+     * consolidated_to のリンク生成
+     *
+     * @param int $id 投稿ID
+     * @return string <a>タグ、または空文字
+     */
+    private static function get_consolidated_link($id) {
+        $url = get_permalink($id);
+        if (!$url) return "";
+        return "<a href='{$url}' target='_blank' rel='noopener' title='Consolidated'>Consolidated(#{$id})</a>";
     }
 }

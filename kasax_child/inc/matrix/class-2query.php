@@ -128,6 +128,7 @@ class Query {
             return $this->fetch_by_table_context();
         }
 
+
         // 2. 5秒以内のリロード（再検索）チェック
         // Transientを使用して、ユーザーの連続ブラウザ更新を検知
         $transient_key = 'kx_reloaded_' . $this->post_id;
@@ -145,12 +146,17 @@ class Query {
 
         // 3. キャッシュ(Dy::content)から子要素候補を取得
         $cached_ids = Dy::get_content_cache($this->post_id, 'descendants') ?: [];
-
         $cached_virtuals = Dy::get_content_cache($this->post_id, 'virtual_descendants') ?: [];
-        $is_virtual = isset($cached_virtuals) ? 1 : $is_virtual;
+
+        // $cached_virtuals が空でない配列なら true (1)
+        $is_virtual = !empty($cached_virtuals);
+
 
         if (empty($cached_ids)) {
-            if(!$is_virtual) Msg::caution('No cached descendants found. Rebuilding...');
+            // 仮想階層がある場合は「実体IDなし」の警告を抑制する
+            if (!$is_virtual) {
+                Msg::caution('No cached descendants found. Rebuilding...');
+            }
             return $this->fetch_ids_via_kx_query();
         }
 
@@ -172,6 +178,8 @@ class Query {
             if(!$is_virtual)  Msg::caution("Cache mismatch or invalid entry in: [{$title}]. Rebuilding via KxQuery.");
             return $this->fetch_ids_via_kx_query();
         }
+
+
 
         return $final_ids;
     }

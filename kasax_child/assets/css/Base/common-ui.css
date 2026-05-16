@@ -23,14 +23,11 @@ td p
 	width:80em;
 }
 
-
-
-/* .【a】リンク*/
-/* ..【メイン】*/
+/* a リンク*/
 /*↓下線消す*/
 a {
 	text-decoration	:none;
-	outline					:none;
+	outline	    	:none;
 }
 
 

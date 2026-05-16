@@ -3,7 +3,6 @@
  * [Path]: inc\core\class-kx-dy-path-index-handler.php
  * DyDomainHandler::: 各ドメインロジックの基底抽象クラス
  */
-
 namespace Kx\Core;
 
 use Su;
@@ -12,17 +11,26 @@ use Dy;
 abstract class DyPathIndexHandler {
 
     /**
-     * ストレージから生データを取得し、ロジックを適用して返す
+     * ストレージから特定のドメインの生データを取得する
+     *
+     * @param string $domain 取得対象のドメイン名（例: 'path_index'）
+     * @return mixed         ストレージから取得されたデータ
      */
-    protected static function get_from_storage(string $domain  ) {
+    protected static function get_from_storage(string $domain) {
         return DyStorage::retrieve($domain);
     }
 
     /**
-     * パス構造の解析ロジック（移設のメイン実体）
-     * 冗長なSQL発行を厳禁とする鉄則を遵守
+     * パス構造の解析ロジック（メイン実体）
+     *
+     * タイトルに含まれる「≫」や「＠」を分解し、階層構造、名称、更新時間等を
+     * インデックス化してストレージに格納する。
+     *
+     * @param int    $post_id 投稿ID
+     * @param string $mode    動作モード（'maintenance' 等）
+     * @return array|null     解析済みのエントリ配列。失敗時は null
      */
-    public static function process_path_analysis(int $post_id, $mode = ''): ?array {
+    public static function process_path_analysis(int $post_id, string $mode = ''): ?array {
         if (!$post_id) return null;
 
         // 1. 金庫から現在の状態を確認（重複処理の防止）
@@ -130,13 +138,13 @@ abstract class DyPathIndexHandler {
     }
 
     /**
-     * PostIDから接頭辞等のルールに基づき、システム上の属性（type, genre, markers）を特定する
+     * 接頭辞やルールに基づき、システム上の属性（type, genre, markers）を特定する
      *
      * @param int    $post_id ポストID
-     * @param string $mode    動作モード（'maintenance'など）
-     * @return array{type: string, genre: string, markers: array<string, int>} 属性情報の連想配列
+     * @param string $mode    動作モード
+     * @return array{type: string, genre: string, markers: array<string, int>} 属性情報
      */
-    private static function identify_post_attributes($post_id , $mode = '') {
+    private static function identify_post_attributes(int $post_id, string $mode = ''): array {
         $post_id = (int)$post_id;
 
         // デフォルト値の設定
@@ -175,12 +183,16 @@ abstract class DyPathIndexHandler {
         return $result;
     }
 
-
     /**
-     * パスセグメントの配列から、それぞれの「名称」を特定して配列で返す
-     * ContextRoot と GroupKeys の両方でカンマ区切り（複数マッチ）に対応
+     * パスセグメント配列から、各階層の定義名称を特定して配列で返す
+     *
+     * SystemConfig の prefix_map および contextual_definitions を参照し、
+     * 文脈依存の名称解決を行う。
+     *
+     * @param string[] $parts パスセグメントの配列
+     * @return array          解決された名称の配列（未定義箇所は null）
      */
-    private static function resolve_segment_names(array $parts) {
+    private static function resolve_segment_names(array $parts): array {
         $prefix_data = Su::get('title_prefix_map');
         $prefix_map  = $prefix_data['prefixes'] ?? [];
         $context_map = $prefix_data['contextual_definitions'] ?? [];

@@ -2,31 +2,29 @@
 /**
  * [Path]: inc\core\class-kx-consolidator.php
  */
-
 namespace Kx\Core;
 
-use Kx\Core\SystemConfig as Su;
-use Kx\Core\DynamicRegistry as Dy;
-use Kx\Core\KxDirector as kx;
+use Su;
+use Dy;
+use kx;
 use \Kx\Utils\KxMessage as Msg;
-use Kx\Core\TitleParser as Tp;
 use Kx\Utils\Toolbox;
-use Kx\Core\ShortCode;
 use Exception;
-
 
 class Kx_Consolidator {
     // 処理中かどうかを保持するスタティック変数
     private static $current_depth = 0;
     private static $max_depth = 4; // 4階層まで許可
 
-
     /**
      * 統合処理のメイン実行 (Orchestrator)
      *
-     * @return string|false 成功時は生成されたテキスト、致命的失敗時は false
+     * @param int|string $source_id 指示書ID
+     * @param int|string $post_id   出力先ID
+     * @param array      $args      実行オプション ['dest' => 'db'|'file', 'type' => 'simple'|'structured', 'split' => bool]
+     * @return string|false         成功時は生成されたテキスト、致命的失敗時は false
      */
-    public static function run($source_id, $post_id, $args = []) {
+    public static function run($source_id, $post_id, array $args = []) {
         $source_id = (int)$source_id;
         $post_id = (int)$post_id;
 
@@ -94,29 +92,28 @@ class Kx_Consolidator {
         }
     }
 
-
-
-
     /**
-     * 'with_header:10104' のような文字列からIDを抽出するヘルパー
+     * プロンプトID抽出ヘルパー
+     *
+     * @param string $type_str 'with_header:10104' 形式の文字列
+     * @return int|null        抽出されたID、または null
      */
-    private static function extract_template_id($type_str) {
+    private static function extract_template_id(string $type_str): ?int {
         if (strpos($type_str, ':') !== false) {
             return (int)explode(':', $type_str)[1];
         }
         return null;
     }
 
-
-
     /**
-     * 1. 実行前のバリデーション・認証チェック
-     * * @param int   $source_id 指示書ID
+     * 実行前のバリデーション・認証チェック
+     *
+     * @param int   $source_id 指示書ID
      * @param int   $post_id   出力先ID
-     * @param array $args      引数
-     * @return bool            実行可能ならtrue
+     * @param array $args      実行引数
+     * @return bool            実行可能なら true
      */
-    private static function validate_execution($source_id, $post_id, $args) {
+    private static function validate_execution(int $source_id, int $post_id, array $args): bool {
         $dest = $args['dest'] ?? 'db';
 
         // 1. 階層制限
@@ -153,15 +150,13 @@ class Kx_Consolidator {
         return true;
     }
 
-
     /**
-     * 2. 統合対象となる子記事IDリストを収集する
-     * 2-1. Dyキャッシュの 'descendants' (固定リスト) を優先
-     * 2-2. なければ 'raretuCODE' (動的クエリ) を解析して実行
-     * * @param int $source_id 指示書ID
-     * @return array 収集されたID配列
+     * 統合対象となる子記事IDリストを収集する
+     *
+     * @param int $source_id 指示書ID
+     * @return int[]         収集されたID配列
      */
-    private static function collect_source_ids($source_id) {
+    private static function collect_source_ids(int $source_id): array {
         // 1. 固定IDリストがあるか確認
         $ids = Dy::get_content_cache($source_id, 'descendants') ?? null;
 
@@ -181,12 +176,13 @@ class Kx_Consolidator {
 
 
     /**
-     * 3. 子記事のデータを取得し、クリーニングとバリデーションを行う
-     * * @param array $ids                 ソースとなる子記事のID配列
-     * @param int   $source_id 指示書（Dyキャッシュ用）のID
-     * @return array                     正規化された投稿データの配列
+     * 子記事のデータを取得し、クリーニングとバリデーションを行う
+     *
+     * @param int[] $ids       ソースとなる子記事のID配列
+     * @param int   $source_id 指示書ID
+     * @return array[]         正規化された投稿データの配列
      */
-    private static function fetch_and_prepare_sources($ids, $source_id) {
+    private static function fetch_and_prepare_sources(array $ids, int $source_id): array {
         $data = [];
 
         foreach ($ids as $id) {
@@ -251,14 +247,16 @@ class Kx_Consolidator {
     }
 
     /**
-     * 4. 生成されたデータを指定の形式で出力・保存する (Executor)
-     * * @param array  $post_data     整形済みのソースデータ配列
-     * @param int    $post_id       出力先（Target）のポストID
+     * 生成されたデータを指定の形式で出力・保存する (Executor)
+     *
+     * @param array  $post_data     整形済みのソースデータ配列
+     * @param int    $post_id       出力先ID
      * @param array  $args          実行引数
-     * @param string $combined_text 外部で生成済みの結合テキスト。指定があれば生成処理をスキップする。
-     * @return bool                 保存・更新に成功した場合は true、失敗時は false
+     * @param string $combined_text 生成済みの結合テキスト
+     * @return bool                 保存に成功した場合は true
      */
-    private static function execute_output(array $post_data, int $post_id, array $args, $combined_text = '') {
+    private static function execute_output(array $post_data, int $post_id, array $args, string $combined_text = ''): bool {
+
         $dest = $args['dest'] ?? 'db';
 
         // 1. テキストが渡されていない場合のみ生成
@@ -282,14 +280,15 @@ class Kx_Consolidator {
         return false;
     }
 
-
-
     /**
-     * 既存システムに影響を与えず #2 のロジックを利用する
+     * 動的クエリ（raretuCODE）に基づくID取得
+     *
+     * @param array $atts        ショートコード属性
+     * @param int   $exclude_id  除外するID（自身）
+     * @return int[]             取得されたID配列
      */
-    private static function fetch_ids_by_query($atts, $exclude_id) {
-
-    // 1. Query クラスに渡すための最小限の準備
+    private static function fetch_ids_by_query(array $atts, int $exclude_id): array {
+        // 1. Query クラスに渡すための最小限の準備
         $atts['post_id'] = $exclude_id;
 
         // 2. 旧仕様属性を新仕様へ正規化（これを追加）
@@ -307,21 +306,26 @@ class Kx_Consolidator {
         return !empty($ids) ? $ids : [];
     }
 
-
-
     /**
-     * 分岐1: 単純結合
+     * 単純結合 (Simple Merge)
+     *
+     * @param array[] $post_data ソースデータ
+     * @return string            結合テキスト
      */
-    private static function merge_simple($post_data) {
+    private static function merge_simple(array $post_data): string {
         $contents = array_column($post_data, 'content');
         return implode("\n\n", $contents);
     }
 
-
     /**
-     * 子記事用の構造化ユニット（IDとタイトルを付与）
+     * 構造化ユニットのフォーマット
+     *
+     * @param int    $id      記事ID
+     * @param string $title   タイトル
+     * @param string $content 本文
+     * @return string         整形済みユニット
      */
-    private static function format_structured_unit($id, $title, $content) {
+    private static function format_structured_unit(int $id, string $title, string $content): string {
         $unit = "［ID_{$id} ］\n";
         $unit .= "Post_title: {$title}\n";
         $unit .= "内容:\n";
@@ -330,9 +334,12 @@ class Kx_Consolidator {
     }
 
     /**
-     * 子記事群の結合
+     * 構造化結合 (Structured Merge)
+     *
+     * @param array[] $post_data ソースデータ
+     * @return string            結合テキスト
      */
-    private static function merge_structured($post_data) {
+    private static function merge_structured(array $post_data): string {
         $blocks = [];
         foreach ($post_data as $post) {
             $blocks[] = self::format_structured_unit($post['id'], $post['title'], $post['content']);
@@ -341,35 +348,13 @@ class Kx_Consolidator {
     }
 
     /**
-     * ヘッダー（プロンプト）用の整形ユニット
-     * メタ情報は付与せず、生テキストと区切り線を管理
-     */
-    private static function format_header_unit($content) {
-        if (empty($content)) return '';
-
-        $unit = trim($content) . "\n\n___\n";
-        return $unit;
-    }
-
-    /**
-     * フッター（最終指示）用の整形ユニット
-     * LLMへの明示的なラベルとセパレーターを付与
-     */
-    private static function format_footer_unit($content) {
-        if (empty($content)) return '';
-
-        $unit = "\n\n___\n";
-        $unit .= "＜Final_Instruction＞\n";
-        $unit .= trim($content) . "\n"; // ← ここで終わっている
-        return $unit;
-    }
-
-
-
-    /**
      * UI（ボタン一式）をレンダリングする
+     *
+     * @param int    $post_id 投稿ID
+     * @param string $mode    'batch'|'single_post'
+     * @return string|void    単独保存時はHTML文字列を返し、統合時は直接出力する
      */
-    public static function render_ui($post_id, $mode = 'batch') {
+    public static function render_ui(int $post_id, string $mode = 'batch') {
         if (empty($post_id)) return;
 
         // 1. モードに応じた設定の切り分け
@@ -399,8 +384,12 @@ class Kx_Consolidator {
 
     /**
      * コンテキストに応じた推奨引数を取得
+     *
+     * @param int    $post_id 投稿ID
+     * @param string $context 'source'|'target'|'single'
+     * @return array          推奨設定の配列
      */
-    private static function get_suggested_args($post_id, $context) {
+    private static function get_suggested_args(int $post_id, string $context): array {
         return [
             'type' => ($context === 'target') ? 'structured' : 'simple',
             'dest' => 'file', // 今回は確実に動かすため file 固定
@@ -408,11 +397,15 @@ class Kx_Consolidator {
         ];
     }
 
-
     /**
      * 統合実行ボタンのHTMLを生成
+     *
+     * @param int    $post_id 投稿ID
+     * @param string $label   ボタンラベル
+     * @param array  $args    初期設定引数
+     * @return string         HTML
      */
-    private static function build_button_html($post_id, $label, $args) {
+    private static function build_button_html(int $post_id, string $label, array $args): string {
         $action_url = get_stylesheet_directory_uri() . '/pages/export-engine.php';
 
         // 1. プロンプト選択肢の構築
@@ -532,16 +525,13 @@ class Kx_Consolidator {
         return $html;
     }
 
-
     /**
-     * ポストの属性やタイトルから、デフォルトのプロンプト形式とカラーを判定する
-     * * 暫定実装：将来的に JSON 側の設定へ移行予定
+     * ポストの属性からプロンプト形式とカラーを自動判定する
      *
-     * @param int   ＄post_id  対象ポストID
-     * @param array ＄ids      収集された子記事ID群
-     * @return array { type: string, color: string }
+     * @param int $post_id 対象ポストID
+     * @return array       ['type' => string, 'color' => string, 'format' => string|null]
      */
-    public static function determine_default_args($post_id) {
+    public static function determine_default_args(int $post_id): array {
         $config = Su::get('consolidator') ?? [];
 
         // デフォルト値の設定
@@ -549,9 +539,9 @@ class Kx_Consolidator {
         $_color = 'hsl(150, 100%, 50%)'; // スプリンググリーン
         $format = null;
 
-        if ( Tp::is_type('phil_xampp_driven', $post_id)) {
+        if ( TitleParser::is_type('phil_xampp_driven', $post_id)) {
             $_promptID = 'simple';
-        }else if ( Tp::is_type('strat_sales_policie_root', $post_id)) {
+        }else if ( TitleParser::is_type('strat_sales_root', $post_id) ) {
             $_promptID = '10104';
             $_color = 'hsl(270, 100%, 50%)'; // マゼンタ系
             $format = 'md';
@@ -569,7 +559,7 @@ class Kx_Consolidator {
             $type_map = $config['context_type_map'] ?? [];
             foreach ($type_map as $key => $val) {
                 // Tp::is_type を用いて、パスの接頭辞や種別（works等）を判定
-                if (class_exists('Kx\Core\TitleParser') && Tp::is_type($key, $post_id)) {
+                if (class_exists('Kx\Core\TitleParser') && TitleParser::is_type($key, $post_id)) {
                     $_promptID = $val;
                     $_color = 'hsl(200, 100%, 50%)'; // シアン系
                     break; // 最初に見つかったものを優先
@@ -599,11 +589,14 @@ class Kx_Consolidator {
         ];
     }
 
-
     /**
-     * 種別に応じてテキストを結合する
+     * 指定された型（simple/structured/with_header）に基づきテキストを結合
+     *
+     * @param array[] $post_data ソースデータ
+     * @param array   $args      実行引数
+     * @return string            結合後の最終テキスト
      */
-    private static function generate_combined_text_by_type($post_data, $args) {
+    private static function generate_combined_text_by_type(array $post_data, array $args): string {
         $type_raw = $args['type'] ?? 'simple';
 
         // 'with_header:10101' のような形式を分解
@@ -623,14 +616,14 @@ class Kx_Consolidator {
         }
     }
 
-
     /**
-     * 生成されたテキストが制限値を超えているか判定する
-     * * @param string $combined_text 生成済みテキスト
-     * @param array  $args          実行引数（ai_selectを含む）
-     * @return bool                 制限を超えている場合（分割が必要な場合）はtrue
+     * テキスト長がAIモデルの制限値を超えているか判定
+     *
+     * @param string $combined_text 生成済みテキスト
+     * @param array  $args          実行引数
+     * @return bool                 分割が必要な場合 true
      */
-    private static function needs_splitting(string $combined_text, array $args) {
+    private static function needs_splitting(string $combined_text, array $args): bool {
 
         // --- 0. 明示的な分割阻止ガード ---
         // $args['split'] が false の場合は、文字数に関わらず分割しない
@@ -662,12 +655,15 @@ class Kx_Consolidator {
         return false;
     }
 
-
-
     /**
-     * AI制限を超えた場合の分割・多段階出力戦略 (Sub-Orchestrator)
+     * AI制限を超えた場合の分割・多段階出力戦略を実行
+     *
+     * @param array[] $post_data ソースデータ
+     * @param int     $post_id   出力先ID
+     * @param array   $args      実行引数
+     * @return bool              戦略が成功した場合 true
      */
-    private static function run_split_strategy(array $post_data, int $post_id, array $args) {
+    private static function run_split_strategy(array $post_data, int $post_id, array $args): bool {
         try {
             // 1. 準備：設定とデータの仕分け
             $config = self::get_split_config($args);
@@ -698,9 +694,12 @@ class Kx_Consolidator {
     }
 
     /**
-     * 分割実行に必要な設定（JSON）を取得
+     * 分割実行に必要な設定を取得
+     *
+     * @param array $args 実行引数
+     * @return array      分割設定
      */
-    private static function get_split_config(array $args) {
+    private static function get_split_config(array $args): array {
         $config = Su::get('consolidator');
         $template_id = self::extract_template_id($args['type'] ?? '');
 
@@ -715,9 +714,13 @@ class Kx_Consolidator {
     }
 
     /**
-     * 除外IDリストに基づきデータを2系統に分離
+     * 除外IDリストに基づきメインと除外対象を分離
+     *
+     * @param array[] $post_data   全ソースデータ
+     * @param int[]   $exclude_ids 除外対象のID配列
+     * @return array               ['main' => array, 'excluded' => array]
      */
-    private static function split_post_data_by_exclusion(array $post_data, array $exclude_ids) {
+    private static function split_post_data_by_exclusion(array $post_data, array $exclude_ids): array {
         $streams = ['main' => [], 'excluded' => []];
         foreach ($post_data as $data) {
             if (in_array($data['id'], $exclude_ids)) {
@@ -729,11 +732,17 @@ class Kx_Consolidator {
         return $streams;
     }
 
-
     /**
-     * メインデータのチャンク分割保存
+     * メインデータのチャンク分割出力
+     *
+     * @param array[] $main_data ソースデータ
+     * @param int     $post_id   出力先ID
+     * @param array   $args      実行引数
+     * @param array   $config    分割設定
+     * @param int     $start_count 開始パーツ番号
+     * @return int               次に使用すべきパーツ番号
      */
-    private static function output_main_chunks(array $main_data, int $post_id, array $args, array $config, int $start_count) {
+    private static function output_main_chunks(array $main_data, int $post_id, array $args, array $config, int $start_count): int {
         if (empty($main_data)) return $start_count;
 
         // AIモデルのスペックに基づき、安全マージン 0.9 で制限設定
@@ -777,10 +786,13 @@ class Kx_Consolidator {
     }
 
     /**
-     * 記事データの配列を、指定された文字数制限（$limit）に基づいて
-     * 複数のチャンク（グループ）に分割する
+     * 記事データを文字数制限に基づいてチャンクに分割
+     *
+     * @param array[] $main_data ソースデータ
+     * @param int     $limit     文字数上限
+     * @return array             分割されたチャンク配列
      */
-    private static function create_manual_chunks(array $main_data, int $limit) {
+    private static function create_manual_chunks(array $main_data, int $limit): array {
         $chunks = [];
         $current_chunk = [];
         $current_len = 0;
@@ -809,9 +821,13 @@ class Kx_Consolidator {
     }
 
     /**
-     * ID群をWhy/How/Whatおよび重要度で分類する
+     * ID群を役割（Why/How/What）および重要度で分類する
+     *
+     * @param int[] $ids    収集されたID群
+     * @param array $config 設定
+     * @return array        分類結果
      */
-    private static function classify_ids_for_special_task(array $ids, array $config) {
+    private static function classify_ids_for_special_task(array $ids, array $config): array {
         $res = [
             'orch' => [],
             'why' => [],
@@ -847,11 +863,16 @@ class Kx_Consolidator {
         return $res;
     }
 
-
     /**
-     * 除外（巨大ファイル等）の個別保存
+     * 除外対象記事の個別保存
+     *
+     * @param array[] $excluded_data 除外対象のソースデータ
+     * @param int     $post_id       出力先ID
+     * @param array   $args          実行引数
+     * @param int     $start_count   開始パーツ番号
+     * @return int                   次に使用すべきパーツ番号
      */
-    private static function output_excluded_units(array $excluded_data, int $post_id, array $args, int $start_count) {
+    private static function output_excluded_units(array $excluded_data, int $post_id, array $args, int $start_count): int {
         $count = $start_count;
         foreach ($excluded_data as $ex_data) {
             $text = "タスク：［ID_{$ex_data['id']}］以下を全体資料に追加せよ。\n\n";
@@ -867,13 +888,17 @@ class Kx_Consolidator {
         return $count;
     }
 
-
-
     /**
-     * 最終指示書の保存（動的分類ロジック含む）
+     * 最終指示書（プロンプト）の生成・保存
+     *
+     * @param int   $post_id       投稿ID
+     * @param array $args          実行引数
+     * @param array $config        設定
+     * @param int   $count         パーツ番号
+     * @param int[] $processed_ids 処理済みID
+     * @return void
      */
-    private static function output_final_instruction(int $post_id, array $args, array $config, int $count, array $processed_ids = []) {
-
+    private static function output_final_instruction(int $post_id, array $args, array $config, int $count, array $processed_ids = []): void {
 
         $template_id = $config['template_id'];
         if (!$template_id) return;
@@ -922,15 +947,14 @@ class Kx_Consolidator {
         self::execute_output([], $post_id, array_merge($args, ['sub_dir' => 'split_parts', 'part_name' => "Part{$count}_Final_Prompt"]), $text);
     }
 
-
-
     /**
-     * 段階的サニタイズ処理 (数式保護機能付き)
-     * * @param string $content 置換対象テキスト
-     * @param array  $args    実行時引数
-     * @return string 置換後テキスト
+     * 段階的サニタイズ処理 (Inclusive Sanitization)
+     *
+     * @param string $content 変換前テキスト
+     * @param array  $args    実行引数
+     * @return string         変換後テキスト
      */
-    private static function apply_inclusive_sanitization($content, $args = []) {
+    private static function apply_inclusive_sanitization(string $content, array $args = []): string {
         $config = Su::get('text-processor');
         $enabled = $config['sanitizer_settings']['enabled'] ?? false;
         if (!$enabled || empty($content)) return $content;
@@ -993,12 +1017,15 @@ class Kx_Consolidator {
         return $content;
     }
 
-
     /**
-     * DB保存用サブメソッド：変更検知と更新を実行
-     * * 改良点：保存先ポストの先頭にある「タグ：」行を保護し、新しい内容と合体させる。
+     * 統合データを DB (wp_posts) へ保存
+     *
+     * @param int     $post_id       保存先ポストID
+     * @param string  $combined_text 保存するテキスト
+     * @param array[] $post_data     ソースデータのメタ情報
+     * @return bool                  更新が発生し成功した場合 true
      */
-    private static function save_to_db(int $post_id, string $combined_text, array $post_data) {
+    private static function save_to_db(int $post_id, string $combined_text, array $post_data): bool {
 
         // --- 1. 現存する「タグ：」行の抽出と保護 ---
         $current_content = get_post_field('post_content', $post_id);
@@ -1049,12 +1076,15 @@ class Kx_Consolidator {
         return false;
     }
 
-
-
     /**
-     * ファイル保存用ヘルパーメソッド
+     * 統合データをローカルファイルへ保存
+     *
+     * @param int    $post_id 保存に関連するポストID
+     * @param string $content 保存内容
+     * @param array  $args    保存オプション ['ext' => 'txt'|'epub', 'sub_dir' => string]
+     * @return mixed          Toolbox::save_text_to_local の戻り値（パスまたは bool）
      */
-    private static function save_to_text_file($post_id, $content, $args) {
+    private static function save_to_text_file(int $post_id, string $content, array $args) {
         $post = get_post($post_id);
         $title = $post ? $post->post_title : 'no-title';
 

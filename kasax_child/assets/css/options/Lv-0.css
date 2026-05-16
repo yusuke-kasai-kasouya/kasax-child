@@ -183,25 +183,6 @@ hr {
 }
 
 
-
-/* ..class="hr001"
-ウェジェットエリア
-*/
-
-
-.hr001 {
-width: 100%;
-border-bottom: 1px solid #ccc;
-background-color: #F8F8F8;
-}
-
-
-
-
-/* ..class="hr002" 2px
-<hr class="hr002">
-*/
-
 .hr002 {
 width: 99%;
 border-bottom: 2px solid steelblue;
@@ -210,31 +191,11 @@ border-bottom: 2px solid steelblue;
 
 
 
-
-
-/* ..class="hr003" 1px
-<hr class=hr003>
-細い
-*/
-
 .hr003 {
 width: 99%;
 border-bottom: 1px solid steelblue;
 background-color: white;
 }
-
-
-/* ...class="hr0031" 1px 97%;
-<hr class=hr0031>
-細い
-*/
-
-.hr0031 {
-width: 97%;
-border-bottom: 1px solid steelblue;
-background-color: white;
-}
-
 
 
 /* .【投稿日・投稿者などを消す】
@@ -258,34 +219,3 @@ display: none;
   overflow: hidden
 }
 
-/*
-<div class="scroll-off">
-hidden
-*/
-
-
-/* .注意クラス
-コピーされたときに注意すべき案件
-<div class="entry_title">
-*/
-
-.entry_title{
-	background-color:thistle;
-	line-height:150%;
-	margin: 0em 2em 0.5em 2em;
-	border:2px dotted darkgray;
-	padding: 0.1em 0.1em 0.1em 0.1em;
-}
-
-/* ..横バー消す
-横バー消す　
-　*/
-
-/* OFF
-.body{
-overflow-x: hidden;
-}
-.html{
-overflow-x: hidden;
-}
-*/

@@ -104,7 +104,7 @@ abstract class DyDomainHandler {
      * 1. path_index (最速メモリキャッシュ) を確認
      * 2. なければ 独自DB (kx_0) から高速取得
      * 3. それでもなければ WP標準から取得
-     * * ※ 同時に path_index に full, parts, depth をキャッシュする
+     * ※ 同時に path_index に full, parts, depth をキャッシュする
      *
      * @param mixed $post_id 投稿ID (int または idを含むarray)
      * @return string タイトル文字列（失敗時は空文字）
@@ -191,7 +191,7 @@ abstract class DyDomainHandler {
 
     /**
      * 生成された ColorManager のデータをシステムキャッシュ(color_mgr)に登録する
-     * * @param array $mgr ColorManager::get_by_id から返された配列
+     * @param array $mgr ColorManager::get_by_id から返された配列
      * @return void
      */
     public static function register_to_color_mgr_cache($mgr) {
@@ -201,7 +201,7 @@ abstract class DyDomainHandler {
 
         $_color_mgr = Dy::get('color_mgr') ?: [];
 
-        // すでに同じ colormgr_id（例: 200midnight_kx30）があれば登録をスキップ
+        // すでに同じ colormgr_id（例: 200midnight）があれば登録をスキップ
         if (!isset($_color_mgr[$mgr['colormgr_id']])) {
             $_color_mgr[$mgr['colormgr_id']] = $mgr;
             Dy::set('color_mgr', $_color_mgr);
@@ -230,26 +230,30 @@ abstract class DyDomainHandler {
 
         return $_flags[$post_id];
     }
+
     /**
      * 特定のPostIDに対して実行時の動的フラグ（または任意のデータ）をセットする
-     * * [運用ルール]
+     *
+     * [運用ルール]
      * ・セット時は $value を指定可能。省略した場合は 1 がセットされる。
      * ・判定時は PHP の「ゆるい比較」を利用することを推奨。
-     * 奨: if (KxDy::get_flags($id, 'rendering')) { ... }
-     * ・フラグを削除する場合は、unset を推奨（PHPDoc参照）。
-     * * @param int    $post_id 投稿ID
+     *   例: if (Dy::get_flags($id, 'rendering')) { ... }
+     * ・フラグを削除する場合は、unset_flags() を推奨。
+     *
+     * @param int    $post_id 投稿ID
      * @param string $key     フラグ名・キー名
      * @param mixed  $value   格納する値（デフォルトは 1）
      * @return void
      */
     public static function set_flags($post_id, $key, $value = 1) {
-        $current = Dy::get('flags', $post_id) ?: [];
+        $current = Dy::get_flags($post_id) ?: [];
         $current[$key] = $value;
         DyStorage::update('flags', [ $post_id => $current ]);
     }
+
     /**
      * 特定のPostIDに紐づくフラグ（またはデータ）を完全に削除する
-     * * 0 を代入するのではなく、配列の要素自体を削除(unset)することで
+     * 0 を代入するのではなく、配列の要素自体を削除(unset)することで
      * メモリを解放し、isset() 等の判定を初期状態に戻します。
      *
      * @param int    $post_id 投稿ID
@@ -327,7 +331,7 @@ abstract class DyDomainHandler {
 
     /**
      * 指定されたIDの情報を取得する
-     * * @param int    $post_id 投稿ID
+     * @param int    $post_id 投稿ID
      * @param string $key     特定のキーのみ取得したい場合に指定
      * @param mixed  $default 値が存在しない場合のデフォルト値
      * @return mixed         配列全体、または特定のキーの値
@@ -350,7 +354,7 @@ abstract class DyDomainHandler {
     }
     /**
      * 指定されたIDに付随する情報をセットする（上書き・追記）
-     * * @param int   $post_id 投稿ID
+     * @param int   $post_id 投稿ID
      * @param array $data    保存したい情報の配列
      * @param bool  $merge   既存のinfoにマージするかどうか（falseならそのIDのinfoを完全上書き）
      * @return void
@@ -422,7 +426,7 @@ abstract class DyDomainHandler {
     /**
      * ポストIDから作品設定を取得
      * タイトル構造: ∬10(0) ≫ c103(1) ≫ Ksy022(2)
-     * * @param int $post_id
+     * @param int $post_id
      * @return array|null 作品データに 'full_key' (例: ksy022) を加えた配列
      */
     public static function get_work($post_id) {
@@ -456,7 +460,7 @@ abstract class DyDomainHandler {
 
     /**
      * 特定のPostIDのMatrix設定を取得する
-     * * @param int         $post_id 投稿ID
+     * @param int         $post_id 投稿ID
      * @param string|null $key     特定のキー。nullの場合はそのIDの全マトリクスを返す。
      * @return mixed      取得したデータ、存在しない場合は空配列またはnull
      */
@@ -476,7 +480,7 @@ abstract class DyDomainHandler {
     }
     /**
      * 特定のPostIDに対してMatrix設定（配列データ）を蓄積・保存する
-     * * @param int    $post_id 投稿ID
+     * @param int    $post_id 投稿ID
      * @param string $key     マトリクス内の識別キー（例: 'layout', 'relation'）
      * @param mixed  $data    保存するデータ（配列やオブジェクト等）
      */
@@ -538,7 +542,7 @@ abstract class DyDomainHandler {
 
     /**
      * 作品シリーズと番号からキャラクター属性を取得する（識別子の自動クレンジング付）
-     * * @param string|int $series シリーズ識別子 (例: 'Μ', 'Β')
+     * @param string|int $series シリーズ識別子 (例: 'Μ', 'Β')
      * @param string|mixed $num  キャラクター番号（'c'や'＼c'が付与されていても自動除去）
      * @return array キャラクター属性配列
      */
@@ -581,7 +585,7 @@ abstract class DyDomainHandler {
 
     /**
      * ID配列を走査し、システム上の有効な投稿（公開済み等）のみを抽出する
-     * * @param array $ids 投稿IDの配列
+     * @param array $ids 投稿IDの配列
      * @return array 有効なIDのみの配列
      */
     public static function validate_ids(array $ids) {
@@ -624,10 +628,11 @@ abstract class DyDomainHandler {
 
 
     /**
-    * trace カウントを増減させる
-    * @param string $key   カウントしたいキー名 (例: 'kxx_sc_count')
-    * @param int    $delta 増分 (1 でプラス、-1 でマイナス)
-    */
+     * trace カウントを増減させる
+     * @param string $key   カウントしたいキー名 (例: 'kxx_sc_count')
+     * @param int    $delta 増分 (1 でプラス、-1 でマイナス)
+     * @return int 更新後のカウント値
+     */
     public static function trace_count($key, $delta = 1) {
         $_trace = Dy::get('trace');
 

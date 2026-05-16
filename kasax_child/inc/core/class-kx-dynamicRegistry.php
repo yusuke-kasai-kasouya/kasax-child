@@ -342,7 +342,7 @@ class DynamicRegistry {
      *
      * @param string $key トレースキー
      * @param int $delta 増減値
-     * @return void
+     * @return int 更新後のカウント値
      */
     public static function trace_count($key, $delta = 1) {
         return DyDomainHandler::trace_count($key, $delta);

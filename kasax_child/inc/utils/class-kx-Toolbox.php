@@ -20,8 +20,11 @@ use \Kx\Utils\KxMessage as Msg;
 class Toolbox {
 
     /**
-     * dump
+     * 変数の内容を整形して出力用文字列として生成する
      *
+     * @param mixed $data  出力対象データ
+     * @param int   $level インデント階層
+     * @return string      整形済みHTML文字列
      */
     public static function dump($data, $level = 0) {
         $indent = str_repeat("    ", $level);
@@ -84,10 +87,11 @@ class Toolbox {
         return $output;
     }
 
-
-
     /**
      * 統合概要フラグ（integrated）が立っているか確認
+     *
+     * @param int $post_id 投稿ID
+     * @return bool
      */
     public static function is_integrated($post_id): bool {
         if (!$post_id) return false;
@@ -99,9 +103,12 @@ class Toolbox {
         return self::has_flag((string)$flags, 'integrated');
     }
 
-
     /**
      * コンマ区切りのフラグ文字列内に特定のフラグが存在するか判定
+     *
+     * @param string|null $flags_str フラグ文字列
+     * @param string      $target    検索するフラグ名
+     * @return bool
      */
     public static function has_flag(?string $flags_str, string $target): bool {
         if (empty($flags_str)) return false;
@@ -110,17 +117,11 @@ class Toolbox {
         return in_array($target, $flags_array, true);
     }
 
-
-
-
-
-
     /**
-     * 判定ロジック（拡張時はここだけいじれば良い）
+     * 指定したポストがコンテンツキャッシュ対象かどうかを判定する
      *
-     * @param int   $post_id
-     * @param array $_KxDy   DynamicRegistry::get('content')[$post_id] の中身
-     * @return bool キャッシュすべきなら true, すべきでないなら false
+     * @param int $post_id 投稿ID
+     * @return bool キャッシュすべきなら true
      */
     public static function the_content_cache_post( $post_id ) {
 
@@ -164,18 +165,24 @@ class Toolbox {
 
 
 
+
+
     /**
-     * サイドバーおよびテンプレート用カテゴリー検索ボックスの生成
+     * カテゴリー検索ボックスのHTMLを生成する
      *
+     * サイドバーおよびテンプレート用カテゴリー検索ボックスの生成
      * Laravel検索テンプレートの呼び出し、またはフォールバック用の
      * カテゴリー・タグ選択フォームHTMLを生成する。
      *
-     * @param array $args {
-     *     @type int $t 表示タイプ/幅の識別子 (24, 50, or others)
-     * }
-     * @return string 生成されたHTMLコンテンツ
+     * @param array $args ['t' => 表示タイプ]
+     * @return string 生成されたHTML
      */
     public static function category_search_box( $args ) {
+
+        $_width = 300;
+        $_size = 24;
+        $_css1 = '__kx_search';
+        $_categories = null;
 
         $_online = NULL;
         if( $args[ 't' ] == 24 )
@@ -195,17 +202,7 @@ class Toolbox {
             $_online .= '</div>';
             $_online .= '</div>';
         }
-        else
-        {
-            $_width	= 300;
-            $_css1		= '__kx_search';
-            $_size		= 24;
-            $_online = '<div style="display:flex;justify-content: flex-end;">';
-            $_online .= '<div id="laravel-status-badge" style="display: inline-block; padding: 0px 8px; margin-bottom: 0px; font-size: 11px; font-weight: bold; color: #fff; background-color: #c82333; border-radius: 4px; letter-spacing: 1px;">';
-            $_online .= '● Laravel OFF-LINE';
-            $_online .= '</div>';
-            $_online .= '</div>';
-        }
+
 
         if( empty( $cat ) )
         {
@@ -223,6 +220,17 @@ class Toolbox {
                 'categories' => $_categories,
                 'online'     => $_online,
             ], false); // 文字列として返す
+        }
+        else
+        {
+            $_width	= 300;
+            $_css1		= '__kx_search';
+            $_size		= 24;
+            $_online = '<div style="display:flex;justify-content: flex-end;">';
+            $_online .= '<div id="laravel-status-badge" style="display: inline-block; padding: 0px 8px; margin-bottom: 0px; font-size: 11px; font-weight: bold; color: #fff; background-color: #c82333; border-radius: 4px; letter-spacing: 1px;">';
+            $_online .= '● Laravel OFF-LINE';
+            $_online .= '</div>';
+            $_online .= '</div>';
         }
 
         $ret  = '';
@@ -307,11 +315,10 @@ class Toolbox {
         return $ret;
     }
 
-
     /**
-     * ブラウザタブ表示用に最適化されたタイトルを生成する。
-     * ルート階層と記事名（＠なし）を優先し、中間を圧縮する。
-     * * @return string
+     * ブラウザタブ表示用に最適化されたタイトルを生成する
+     *
+     * @return string 整形済みタイトル
      */
     public static function generate_formatted_tab_title() {
         $post_id = get_the_ID();
@@ -379,16 +386,11 @@ class Toolbox {
             : $result;
     }
 
-
-
-
-
-
-
     /**
-     * 検索フォームレンダリング（Laravel/Localハイブリッド）
-     * * @param array $args t=1でタグを折りたたみ表示
-     * @return string HTML content
+     * 検索フォームのレンダリング
+     *
+     * @param array $args オプション引数
+     * @return string HTMLコンテンツ
      */
     public static function render_search_form($args) {
         $is_laravel_online = \Kx\Core\DynamicRegistry::get_system('laravel_online');
@@ -494,10 +496,10 @@ class Toolbox {
         return $html;
     }
 
-
     /**
-     * headerバーの制御ロジック
-     * * @return string|void
+     * ヘッダーバーの制御およびHTML生成
+     *
+     * @return string|null HTMLコンテンツ（編集画面等ではnull/空）
      */
     public static function header_bar() {
         // 編集画面では表示しない
@@ -561,17 +563,14 @@ class Toolbox {
         return KxTemplate::get('layout/header-bar', $args, false);
     }
 
-
-
     /**
-     * サイドバー。分岐・選択
+     * サイドバーのHTML生成
      *
-     * @return void
+     * @return string 生成されたHTML
      */
     public static function html_side() {
         $post_id = get_the_ID();
         $ret	= '';
-
 
         $path_index = Dy::get_path_index($post_id) ?? [];
 
@@ -616,14 +615,13 @@ class Toolbox {
     }
 
 
-
     /**
      * クリップボードにIDをコピー。
      * 2021-08-06
      *
-     * @param int $id
-     * @param string $type   link or それ以外。
-     * @return void
+    * @param int         $id   投稿ID
+     * @param string|null $type 'link' または null
+     * @return string       生成されたHTML
      */
     public static function script_id_clipboard( $id , $type = null ){
 
@@ -662,9 +660,10 @@ class Toolbox {
     }
 
     /**
-     * 投稿タイプに基づき投稿者IDを更新し、結果メッセージを返す。
-     * * @param int|null $id 投稿ID。未指定時は現在の投稿ID。
-     * @return string|null 変更があった場合はHTML文字列、不要または失敗時はnull。
+     * 投稿タイプに基づき投稿者IDを自動更新する
+     *
+     * @param int|null $id 投稿ID
+     * @return string|null 変更通知メッセージ、または null
      */
     public static function updateAuthorIdByPostType($id = null): ?string
     {
@@ -756,12 +755,12 @@ class Toolbox {
             return;
         }
 
-        // 4. メッセージ構築 (旧 kx_updat_message の統合)
+        // 4. メッセージ構築
         if ($status === 1) {
             // Dy を使用して実行時ログを蓄積
             $update_logs = Dy::get('ghost_update_logs') ?: [];
             $log_html = sprintf(
-                '<div class="__large __margin_bottom8">🔃%d　%s</div>',
+                '<div class="__large">🔃%d　%s</div>',
                 $current_run_count,
                 esc_html($log_msg)
             );
@@ -770,7 +769,7 @@ class Toolbox {
 
             // 表示用HTMLの構築
             echo '<div class="kxsc_update">';
-            printf('<div class="__xlarge __margin_bottom8">更新中…%d件…………</div>', count($update_logs));
+            printf('<div class="__xlarge">更新中…%d件…………</div>', count($update_logs));
             foreach ($update_logs as $line) {
                 echo $line;
             }
@@ -809,7 +808,7 @@ class Toolbox {
 
     /**
      * 汎用テキストファイル保存関数（Markdown対応版）
-     * * @param string $content  保存内容
+     * @param string $content  保存内容
      * @param array  $meta     { 'id': 識別子, 'title': タイトル }
      * @param array  $options  {
      * 'use_time': bool,
@@ -817,6 +816,7 @@ class Toolbox {
      * 'ext': string ('txt'|'md'), // 拡張子指定
      * 'sub_dir': string
      * }
+     * @return string|false   保存成功時はフルパス、失敗時は false
      */
     public static function save_text_to_local(string $content, array $meta = [], array $options = []) {
 
@@ -966,7 +966,7 @@ class Toolbox {
     /**
      * 現在のページが1920pxワイドレイアウトを適用すべきタイプ（制作ログ等）かどうかを判定する
      * LLMフレンドリー名: isWideLayoutScreen / checkIs1920WidthType
-     * * @param int|null $post_id 投稿ID（未指定時は現在のID）
+     * @param int|null $post_id 投稿ID（未指定時は現在のID）
      * @return bool 1920px対象ならtrue、そうでなければfalse
      */
     public static function isWideLayoutDisplay(?int $post_id = null): bool
@@ -981,10 +981,12 @@ class Toolbox {
 
 
     /**
-     * コンテンツをEPUB出力用のHTML構造に置換・変換する
-     * * @param string $content 変換前のコンテンツ
-     * @param string $title タイトル
-     * @return string 完全なHTML構造の文字列
+     * コンテンツをEPUB出力用のHTML構造に変換する
+     *
+     * @param string $text    生テキスト
+     * @param int    $post_id 投稿ID
+     * @param string $title   タイトル
+     * @return string 完全なHTML文字列
      */
     public static function convert_content_to_epub_html($text, $post_id,$title = 'no-title') {
 

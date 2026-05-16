@@ -70,15 +70,29 @@ class WorkStation {
 
         $html = '';
         foreach ($blueprint as $key => $data) {
-            // ...ループ処理...
+            // アンカーIDの生成
+            $anchor_id = "section-" . str_replace('section_', '', (string)$key);
+
+            // アウトライン（目次）への登録
+            if (!empty($data['use_outline'])) {
+                $title_for_outline = (string)($data['title'] ?? '');
+                // タイトルが空でない場合のみアウトラインに登録
+                if ($title_for_outline !== '') {
+                    $html .= (string)\Kx\Core\OutlineManager::add_from_loop(self::$host_id, $title_for_outline, $anchor_id);
+                }
+            }
+
+            // アンカーIDを持つセクションでラップして出力
+            $html .= sprintf('<section id="%s" class="workstation-unit">', esc_attr($anchor_id));
             $html .= self::render_component($data);
+            $html .= '</section>';
         }
 
         // 最後に確実に string を返す（これがないと波線が出ることがあります）
         return (string)$html;
     }
 
-     /**
+    /**
      * スキーマの分岐・構成定義（Blueprint）の取得
      *
      * @param string $type ボードのタイプ
