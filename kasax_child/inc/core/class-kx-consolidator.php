@@ -1018,6 +1018,72 @@ class Kx_Consolidator {
     }
 
     /**
+     * H3の（※※※＿）を検知し、以降の要素に接頭語を付与する。
+     * かつ、H3行自体の「＿」は除去して出力する。
+     */
+    private static function apply_dynamic_markdown_prefix(string $content): string {
+        $config = Su::get('text-processor');
+        $settings = $config['markdown_prefix_settings'] ?? null;
+
+        if (!$settings || empty($settings['pattern'])) {
+            return $content;
+        }
+
+        $id_pattern = $settings['pattern'];
+
+        $lines = explode("\n", $content);
+        $current_prefix = '';
+        $output = [];
+
+        foreach ($lines as $line) {
+            // 1. 全ての H3（### ）行を検知
+            if (preg_match('/^###\s+/', $line)) {
+
+                // パターンA：接頭語の指示（※※※＿）がある場合
+                if (preg_match('/^###\s*+(.*?)（(.+?)＿）/u', $line, $m)) {
+                    $title_part = $m[1];
+                    $current_prefix = $m[2]; // 新しい接頭語をセット
+                    $line = "### {$title_part}（{$current_prefix}）";
+                }
+                // パターンB：指示がない普通の H3 の場合
+                else {
+                    $current_prefix = ''; // 接頭語をクリア（リセット）！
+                }
+
+                $output[] = $line;
+                continue;
+            }
+
+            // 接頭語がある場合のみ、これ以降の ID 置換を行う
+            if ($current_prefix) {
+
+                // --- パターンA: マークダウン見出し形式（#+ ID：...） ---
+                if (preg_match('/^(#+)\s*+(.+)$/u', $line, $m)) {
+                    $hashes = $m[1];
+                    $title_body = $m[2];
+                    if (preg_match($id_pattern, $title_body)) {
+                        $line = "{$hashes} {$current_prefix}_{$title_body}";
+                    }
+                }
+                // --- パターンB & C: 太字形式（**ID：...**）または リスト内太字（* **ID：...**） ---
+                elseif (preg_match('/^(\s*[*+-]\s+)?\*\*([^*]+)\*\*(.*)$/u', $line, $m)) {
+                    $bullet_part = $m[1]; // リスト記号部分
+                    $bold_content = $m[2]; // 太字の中身
+                    $rest = $m[3];         // 残りの文字列
+
+                    if (preg_match($id_pattern, $bold_content)) {
+                        $line = "{$bullet_part}**{$current_prefix}_{$bold_content}**{$rest}";
+                    }
+                }
+            }
+
+            $output[] = $line;
+        }
+
+        return implode("\n", $output);
+    }
+
+    /**
      * 統合データを DB (wp_posts) へ保存
      *
      * @param int     $post_id       保存先ポストID
@@ -1102,8 +1168,11 @@ class Kx_Consolidator {
             'prefix'   => 'WP'
         ];
 
-        //置換
+        // 1. 既存のサニタイズ（置換）
         $content = self::apply_inclusive_sanitization($content, $args);
+
+        // 2. 追加：動的マークダウン接頭語置換（最終出力直前に実行）
+        $content = self::apply_dynamic_markdown_prefix($content);
 
         if ($target_ext === 'epub') {
             // Pandocが解釈しやすいよう最低限のHTMLタグで包む

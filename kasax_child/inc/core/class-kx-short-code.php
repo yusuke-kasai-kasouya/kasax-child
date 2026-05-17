@@ -3,7 +3,6 @@
  * [Path]: inc\core\class-kx-short-code.php
  * [Role]: システム内の全ショートコード（raretu, matrix等）の登録と実行時ハンドリングを行う。
  */
-
 namespace Kx\Core;
 
 use Kx\Core\SystemConfig as Su;

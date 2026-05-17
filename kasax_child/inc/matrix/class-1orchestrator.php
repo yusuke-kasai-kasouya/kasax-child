@@ -36,6 +36,7 @@ class Orchestrator {
             'table'      => '',
             'where'      => '',
             'where_json' => '',
+            'tougou'     => '',
             'order'      => 'ASC',
             'sort'       => '',
             'sort_top'   => '',
