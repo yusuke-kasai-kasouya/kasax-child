@@ -16,6 +16,10 @@ if ($parent_id) {
 
 $str_ids = implode(',', $ids);
 
+// 【手法1】クローンツール用にROOT IDを除外したリストを作成
+$ids_cloner     = array_diff($ids, [$parent_id]);
+$str_ids_cloner = implode(',', $ids_cloner);
+
 $path_index   = Dy::get_path_index($parent_id);
 $parent_title = $path_index['full'] ?? '';
 $title_end    = $path_index['last_part'] ?? '';
@@ -31,6 +35,14 @@ $replace_url = get_stylesheet_directory_uri() . '/pages/batch/batch-preview.php?
     'id_base'    => $parent_id,
     'title_base' => $parent_title,
     'ids'        => $str_ids,
+    'title_end'  => $title_end
+]);
+
+// 増設：クローンツール用URL（除外済みIDリストを渡す）
+$cloner_url  = get_stylesheet_directory_uri() . '/pages/batch/batch-tree-cloner.php?' . http_build_query([
+    'id_base'    => $parent_id,
+    'title_base' => $parent_title,
+    'ids'        => $str_ids_cloner,
     'title_end'  => $title_end
 ]);
 ?>
@@ -61,6 +73,28 @@ $replace_url = get_stylesheet_directory_uri() . '/pages/batch/batch-preview.php?
                     <div class="kx-action-area">
                         <a href="<?= esc_url($replace_url) ?>" class="kx-btn-link" target="_blank">
                             LAUNCH REPLACE TOOL ≫
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 増設：TREE CLONE -->
+                <div class="kx-batch-column border-left">
+                    <h4 class="kx-column-title">TREE CLONE</h4>
+                    <div class="kx-info-row">
+                        <span class="label">SOURCE ROOT:</span>
+                        <span class="value"><?= esc_html($parent_id) ?></span>
+                    </div>
+                    <div class="kx-info-row">
+                        <span class="label">UNIT COUNT:</span>
+                        <span class="value accent"><?= count($ids_cloner) ?> units</span>
+                    </div>
+                    <div class="kx-info-row">
+                        <span class="label">TARGET IDS:</span>
+                        <span class="value small dim"><?= esc_html($str_ids_cloner) ?></span>
+                    </div>
+                    <div class="kx-action-area">
+                        <a href="<?= esc_url($cloner_url) ?>" class="kx-btn-link" target="_blank">
+                            SETUP TREE CLONE ≫
                         </a>
                     </div>
                 </div>

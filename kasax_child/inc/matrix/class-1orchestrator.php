@@ -10,12 +10,18 @@ use \Kx\Utils\KxMessage as Msg;
 
 /**
  * Class Orchestrator
- * 旧raretuの司令塔。ショートコードからの入力を受け取りパイプラインを回す。
+ * raretuの司令塔。ショートコードからの入力を受け取りパイプラインを回す。
  */
 class Orchestrator {
-    private $atts;
-    private $origin_path;
+    private array $atts;
 
+    /** @var array|null 解析されたパスインデックス */
+    private ?array $origin_path;
+
+    /**
+     *
+     * @param array $atts ショートコード等から渡される属性配列
+     */
     public function __construct($atts) {
         $this->atts = $atts;
 

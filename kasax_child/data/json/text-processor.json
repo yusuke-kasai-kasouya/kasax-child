@@ -1,4 +1,14 @@
 {
+    "markdown_prefix_settings": {
+        "pattern": "/([THUIBSA]|Ud)\\d{2,4}[:：]/"
+    },
+
+    "contextual_id_prefix_settings": {
+        "trigger_title_pattern": "/^κ/",
+        "heading_label_filter": "[HOPXM]",
+        "unit_id_tag_regex": "/(［ID_(\\d+)\\s*］)/u"
+    },
+
     "sanitizer_settings": {
         "enabled": true,
         "level": 2
@@ -15,7 +25,7 @@
         "■": "##",
         "◆": "###",
         "▼": "####",
-        "□": "#####",
+        "✚": "#####",
         "✤": "######",
         "《": "**",
         "》": "**"

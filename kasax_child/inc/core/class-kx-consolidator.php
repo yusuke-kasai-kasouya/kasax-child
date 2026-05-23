@@ -541,7 +541,7 @@ class Kx_Consolidator {
 
         if ( TitleParser::is_type('phil_xampp_driven', $post_id)) {
             $_promptID = 'simple';
-        }else if ( TitleParser::is_type('strat_sales_root', $post_id) ) {
+        }else if ( TitleParser::is_type('strat_prompt_root', $post_id) ) {
             $_promptID = '10104';
             $_color = 'hsl(270, 100%, 50%)'; // マゼンタ系
             $format = 'md';
@@ -1012,8 +1012,6 @@ class Kx_Consolidator {
             return base64_decode($matches[1]);
         }, $content);
 
-
-
         return $content;
     }
 
@@ -1062,17 +1060,21 @@ class Kx_Consolidator {
                     $hashes = $m[1];
                     $title_body = $m[2];
                     if (preg_match($id_pattern, $title_body)) {
-                        $line = "{$hashes} {$current_prefix}_{$title_body}";
+                        // ドル記号を削除してから接頭語を付与
+                        $clean_body = str_replace('$', '', $title_body);
+                        $line = "{$hashes} {$current_prefix}_{$clean_body}";
                     }
                 }
-                // --- パターンB & C: 太字形式（**ID：...**）または リスト内太字（* **ID：...**） ---
+                // --- パターンB & C: 太字形式（**ID：...**） ---
                 elseif (preg_match('/^(\s*[*+-]\s+)?\*\*([^*]+)\*\*(.*)$/u', $line, $m)) {
                     $bullet_part = $m[1]; // リスト記号部分
                     $bold_content = $m[2]; // 太字の中身
                     $rest = $m[3];         // 残りの文字列
 
                     if (preg_match($id_pattern, $bold_content)) {
-                        $line = "{$bullet_part}**{$current_prefix}_{$bold_content}**{$rest}";
+                        // ドル記号を削除してから接頭語を付与
+                        $clean_bold = str_replace('$', '', $bold_content);
+                        $line = "{$bullet_part}**{$current_prefix}_{$clean_bold}**{$rest}";
                     }
                 }
             }
@@ -1082,6 +1084,65 @@ class Kx_Consolidator {
 
         return implode("\n", $output);
     }
+
+
+/**
+ * 統合テキスト内の各セクションに対し、［ID_xx ］から抽出したIDをH2見出し（##）に付与する。
+ * 元の［ID_xx ］タグは一切書き換えず、そのまま保持する。
+ */
+private static function apply_parent_context_replacement(string $content, int $post_id): string {
+    $config = Su::get('text-processor');
+    $settings = $config['contextual_id_prefix_settings'] ?? null;
+    if (!$settings) return $content;
+
+    // 1. 実行トリガー判定 (保存先ポストのタイトルに κ が含まれるか)
+    $trigger_pattern = $settings['trigger_title_pattern'] ?? null;
+    $post_title = Dy::get_title($post_id) ?: '';
+    if ($trigger_pattern && !preg_match($trigger_pattern, $post_title)) {
+        return $content;
+    }
+
+    $labels = $settings['heading_label_filter'] ?? '';
+    $id_regex = $settings['unit_id_tag_regex'] ?? '/(［ID_(\d+)\s*］)/u';
+
+    // 2. IDタグで分割。PREG_SPLIT_DELIM_CAPTUREにより、タグ全体とID数字の両方をキャプチャ保持する
+    // $parts[0] : 最初のIDより前のテキスト
+    // $parts[1] : フルタグ（例：［ID_43 ］）
+    // $parts[2] : ID数字（例：43）
+    // $parts[3] : 次のIDまでの本文
+    $parts = preg_split($id_regex, $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+    // IDタグが一つも見つからない場合はそのまま返す
+    if (count($parts) < 3) return $content;
+
+    $new_content = $parts[0]; // 冒頭部分（通常は空）
+
+    // 3要素（タグ全体、数字、本文）ごとにループ
+    for ($i = 1; $i < count($parts); $i += 3) {
+        $full_tag = $parts[$i];      // ［ID_43 ］
+        $unit_id  = $parts[$i + 1];  // 43
+        $body     = $parts[$i + 2] ?? '';
+
+        if ($unit_id && $labels) {
+            /**
+             * 見出し置換ロジック
+             * ^##        : 行頭の ##
+             * \s*        : スペース
+             * ($labels)  : H, O, P などのラベル
+             * (?=\s|$|[:：]) : 直後がスペース、行末、またはコロンの場合のみマッチ（誤爆防止）
+             */
+            $pattern = '/^##\s*(' . $labels . ')(?=\s|$|[:：])/mu';
+            $replacement = '## ' . $unit_id . '_$1';
+            $body = preg_replace($pattern, $replacement, $body);
+        }
+
+        // 重要：元のタグ $full_tag は一切加工せずにそのまま結合
+        $new_content .= $full_tag . $body;
+    }
+
+    return $new_content;
+}
+
 
     /**
      * 統合データを DB (wp_posts) へ保存
@@ -1151,8 +1212,9 @@ class Kx_Consolidator {
      * @return mixed          Toolbox::save_text_to_local の戻り値（パスまたは bool）
      */
     private static function save_to_text_file(int $post_id, string $content, array $args) {
-        $post = get_post($post_id);
-        $title = $post ? $post->post_title : 'no-title';
+        //$post = get_post($post_id);
+        //$title = $post ? $post->post_title : 'no-title';
+        $title = Dy::get_title($post_id) ?: 'no-title';
 
         // 分割保存時（Part1など）の識別子を取得
         $part_suffix = isset($args['part_name']) ? "_{$args['part_name']}" : "";
@@ -1171,8 +1233,11 @@ class Kx_Consolidator {
         // 1. 既存のサニタイズ（置換）
         $content = self::apply_inclusive_sanitization($content, $args);
 
-        // 2. 追加：動的マークダウン接頭語置換（最終出力直前に実行）
+        // 2. 追加：動的マークダウン接頭語置換H3以降型（最終出力直前に実行）
         $content = self::apply_dynamic_markdown_prefix($content);
+
+        // 3. 追加：動的マークダウン接頭語置換H2型（最終出力直前に実行）
+        $content = self::apply_parent_context_replacement($content,$post_id);
 
         if ($target_ext === 'epub') {
             // Pandocが解釈しやすいよう最低限のHTMLタグで包む
