@@ -432,4 +432,110 @@ body {
             });
         }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const slugInput = document.querySelector('.ed-input-slug');
+        const form = document.querySelector('form[action="save_post.php"]') || document.querySelector('form');
+
+        // 1. 最初のハイフン以降が長い場合のみ、さらに4桁ずつ区切るフォーマット関数
+        function formatSlug(value) {
+            const firstHyphenIndex = value.indexOf('-');
+
+            // そもそもハイフンがないパターン（例: s00 など）はそのまま返す
+            if (firstHyphenIndex === -1) {
+                return value;
+            }
+
+            // 最初のハイフンを基準に前後を分割
+            const prefix = value.substring(0, firstHyphenIndex);       // ハイフンより前（例: 13, 1181, f1）
+            const suffixRaw = value.substring(firstHyphenIndex + 1);   // ハイフンより後ろ
+
+            // 【修正】数字以外を消すのではなく、ハイフン（-）のみを除去してアルファベット等も維持する
+            const suffixClean = suffixRaw.replace(/-/g, '');
+
+            const parts = [];
+            if (suffixClean.length > 0) {
+                parts.push(suffixClean.slice(0, 4)); // 後半の最初の4文字（例: 1001, a001）
+            }
+            if (suffixClean.length > 4) {
+                parts.push(suffixClean.slice(4, 8)); // 後半の次の4文字（例: 1300, b300）
+            }
+
+            // 後半をハイフンで結合し、前半部分と合体させる
+            const formattedSuffix = parts.join('-');
+            return prefix + '-' + formattedSuffix;
+        }
+
+        // 2. 送信直前に「最初のハイフン1個のみ」の元の形式に復元する関数
+        function deformatSlugForSubmit(value) {
+            const firstHyphenIndex = value.indexOf('-');
+            if (firstHyphenIndex === -1) {
+                return value;
+            }
+
+            const prefix = value.substring(0, firstHyphenIndex);
+            const suffix = value.substring(firstHyphenIndex + 1);
+            const cleanSuffix = suffix.replace(/-/g, ''); // 後半部分のハイフンのみをすべて除去
+
+            return prefix + '-' + cleanSuffix;
+        }
+
+        if (slugInput) {
+            // ページ読み込み時に初期整形を実行
+            slugInput.value = formatSlug(slugInput.value);
+
+            // 入力中のリアルタイムフォーマット処理（カーソル位置の保持機能付き）
+            slugInput.addEventListener('input', function(e) {
+                const input = e.target;
+                const selectionStart = input.selectionStart;
+                const oldValue = input.value;
+
+                // 整形前にカーソルより左側にあった「ハイフン以外の文字」の数をカウント
+                const nonHyphensBeforeCursor = oldValue.substring(0, selectionStart).replace(/-/g, '').length;
+
+                // フォーマットを適用
+                const newValue = formatSlug(oldValue);
+                input.value = newValue;
+
+                // 整形後にカーソルが正しい位置に戻るよう再計算
+                let newCursorPos = 0;
+                let nonHyphenCount = 0;
+                for (let i = 0; i < newValue.length; i++) {
+                    if (newValue[i] !== '-') {
+                        nonHyphenCount++;
+                    }
+                    if (nonHyphenCount === nonHyphensBeforeCursor) {
+                        newCursorPos = i + 1;
+                        break;
+                    }
+                }
+                if (nonHyphensBeforeCursor === 0) {
+                    newCursorPos = 0;
+                }
+                input.setSelectionRange(newCursorPos, newCursorPos);
+            });
+        }
+
+        // 3. 送信イベント時に値をデフォーマットして元に戻す
+        if (form && slugInput) {
+            form.addEventListener('submit', function() {
+                slugInput.value = deformatSlugForSubmit(slugInput.value);
+            });
+        }
+
+    });
+
+    // 4. Ctrl + Return (Enter) ショートカットによる保存処理 (Windows / Linux 対応)
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + Enter (Return) の判定
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault(); // 改行などのデフォルト挙動を防止
+
+            // 保存ボタンを取得してクリックを発火（closeEditorImmediateおよびform submitイベントを網羅）
+            const saveBtn = document.querySelector('.ed-btn-save') || document.querySelector('.ed-btn-save-top');
+            if (saveBtn) {
+                saveBtn.click();
+            }
+        }
+    });
 </script>

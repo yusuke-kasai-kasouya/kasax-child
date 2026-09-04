@@ -2,18 +2,24 @@
 /**
  * pages/batch/batch-preview.php
  * 修正点: 前回の実行速度(text7)をDBから取得し、今回の合計処理時間を予測表示する機能を追加
+ * 調整点: matrix-batch-title.phpの選択範囲（直下 / 全子孫）を正しく受信し、
+ *         パフォーマンス向上のため「全子孫」の解決（Dy::get_descendants_all）をこの段階で遅延実行するよう修正
  */
 
 require_once('../../../../../wp-load.php');
 
 use Kx\Batch\AdvancedProcessor;
 use Kx\Core\KxQuery;
+use Kx\Core\DynamicRegistry as Dy;
 
 // 1. パラメータ取得と初期化
-$title_base = $_GET['title_base'] ?? '';
-$title_mode = $_GET['title_mode'] ?? 'both';
-$ids_raw    = $_GET['ids']        ?? '';
-$title_end  = $_GET['title_end']  ?? '';
+$id_base       = $_GET['id_base'] ?? '';
+$title_base    = $_GET['title_base'] ?? '';
+$title_mode    = $_GET['title_mode'] ?? 'both';
+$title_end     = $_GET['title_end']  ?? '';
+
+$replace_range = $_GET['replace_range'] ?? '';
+$ids_direct    = $_GET['ids_direct'] ?? '';
 
 // 2. 正規表現置換用フォームからの流入対応
 $input_title_from = $_GET['title_from_regex'] ?? ($_GET['title_from'] ?? '');
@@ -21,18 +27,39 @@ if (empty($input_title_from) && !empty($title_end)) {
     $input_title_from = '≫' . $title_end;
 }
 
-
 $input_title_to   = $_GET['title_to'] ?? $input_title_from;
 if (empty($input_title_from) && !empty($title_end)) {
     $input_title_from = '≫' . $title_end;
     $input_title_to   = '≫' . $title_end; // ここも補完
 }
 
-// 3. IDリストの取得
+// 3. IDリストの取得（遅延処理対応）
 $ids = [];
-if (!empty($ids_raw)) {
-    $ids = explode(',', $ids_raw);
-} elseif (!empty($title_base)) {
+
+if (!empty($replace_range)) {
+    if ($replace_range === 'direct') {
+        if (!empty($ids_direct)) {
+            $ids = explode(',', $ids_direct);
+        }
+    } elseif ($replace_range === 'all') {
+        if (!empty($id_base)) {
+            // パフォーマンスの重い再帰クエリを、このプレビューフェーズで初めて実行します
+            $descendants_all = Dy::get_descendants_all($id_base) ?: [];
+            $ids = $descendants_all;
+            // 元の仕様に合わせて、先頭に親（ルート）IDを追加
+            array_unshift($ids, $id_base);
+        }
+    }
+} else {
+    // 従来パラメータ(ids)での直接遷移時にも備える
+    $ids_raw = $_GET['ids'] ?? '';
+    if (!empty($ids_raw)) {
+        $ids = explode(',', $ids_raw);
+    }
+}
+
+// 範囲指定からIDが解決されず、かつ検索キーワードがある場合はKxQueryで取得（検索フォームからの再サブミット時）
+if (empty($ids) && !empty($title_base)) {
     $query = new KxQuery([
         'search'     => $title_base,
         'title_mode' => $title_mode,
@@ -54,7 +81,7 @@ if (!empty($ids) && is_array($ids)) {
 $ids_string = is_array($ids) ? implode(',', $ids) : '';
 $ids_count  = is_array($ids) ? count($ids) : 0;
 
-// 5. 【追加】過去の実行速度から所要時間を予測
+// 5. 過去の実行速度から所要時間を予測
 $processor = new AdvancedProcessor(); // 内部で refresh_state() が走り最新の text7 を取得
 $avg_speed = (float)($processor->state['text7'] ?? 0); // 1件あたりの秒数
 
@@ -110,7 +137,10 @@ $est_total_minutes = ($est_total_seconds > 0) ? round($est_total_seconds / 60, 2
 
     <div class="info-panel">
         <div>
-            TARGET_COUNT: <span class="stat-val"><?= $ids_count ?></span> items<br>
+            TARGET_COUNT: <span class="stat-val"><?= $ids_count ?></span> items
+            <?php if (!empty($replace_range)): ?>
+                <span style="color: #ff9900; font-weight: bold; margin-left: 10px;">[<?= esc_html(strtoupper($replace_range)) ?>]</span>
+            <?php endif; ?><br>
             <small style="color:#666;">Keyword: <?= esc_html($title_base ?: 'NONE') ?></small>
         </div>
         <div class="est-box">

@@ -21,7 +21,7 @@ class Kx_Consolidator {
      *
      * @param int|string $source_id 指示書ID
      * @param int|string $post_id   出力先ID
-     * @param array      $args      実行オプション ['dest' => 'db'|'file', 'type' => 'simple'|'structured', 'split' => bool]
+     * @param array      $args      実行オプション ['dest' => 'db'|'file', 'type' => 'simple'|'structured'|'text_folder', 'split' => bool]
      * @return string|false         成功時は生成されたテキスト、致命的失敗時は false
      */
     public static function run($source_id, $post_id, array $args = []) {
@@ -59,7 +59,8 @@ class Kx_Consolidator {
                 return false;
             }
 
-            $post_data = self::fetch_and_prepare_sources($ids, $source_id);
+            // 修正：第3引数に $args を引き渡す
+            $post_data = self::fetch_and_prepare_sources($ids, $source_id, $args);
             if (empty($post_data)) {
                 self::$current_depth--;
                 return false;
@@ -180,20 +181,21 @@ class Kx_Consolidator {
      *
      * @param int[] $ids       ソースとなる子記事のID配列
      * @param int   $source_id 指示書ID
+     * @param array $args      実行引数 (ファイル区切りの指示の伝達用)
      * @return array[]         正規化された投稿データの配列
      */
-    private static function fetch_and_prepare_sources(array $ids, int $source_id): array {
+    private static function fetch_and_prepare_sources(array $ids, int $source_id, array $args = []): array {
         $data = [];
 
         foreach ($ids as $id) {
             // 1. 子記事の初期化（再帰的な処理が必要な場合のフック用）
-            ContextManager::sync($id);
+            //ContextManager::sync($id);
             $title = Dy::get_title($id);
             $title = end(Dy::get_path_index($id)['parts']);
 
             // 2. 概要、Ghostの場合はidを置換。
-            $_overview =  Dy::get_content_cache($id,'overview_from') ?? null;
-            $_GhostON = Dy::get_content_cache($id,'ghost_to') ?? null;
+            $_overview  = Dy::get_content_cache($id,'overview_from') ?? null;
+            $_GhostON   = Dy::get_content_cache($id,'ghost_to') ?? null;
             $_ShortCODE = Dy::get_content_cache($id,'short_code') ?? null;
 
             $_IntegratedOverview = Kx::is_integrated($id) ;
@@ -205,10 +207,15 @@ class Kx_Consolidator {
             // 3. 基本チェック：存在しない、または公開済み(publish)以外はスキップ
             $is_overview_to =  Dy::get_content_cache($id,'overview_to') ?? null;
             if (!$post || get_post_status($id) !== 'publish') continue;
-            if ($is_overview_to ) continue;
+
+            // 変更点：UIのチェックボックス設定を反映（デフォルトは true = 含めて統合）
+            $include_overview = $args['include_overview_to'] ?? true;
+            if (!$include_overview && $is_overview_to) {
+                continue;
+            }
+
             if ($_IntegratedOverview ) continue;
             if ($_ShortCODE && $_ShortCODE == 'raretu' && !$_overview ) continue;
-
 
 
             // 4. コンテンツのクリーニング
@@ -220,20 +227,29 @@ class Kx_Consolidator {
 
             // 4.1 ファイル読み込み。
             $pattern_sc = '/\[get_text_folder\s+([^\]]+)\]/i';
-            $cleaned_content = preg_replace_callback($pattern_sc, function($matches) {
+            $cleaned_content = preg_replace_callback($pattern_sc, function($matches) use ($args) {
                 // 属性文字列から配列に変換
                 $atts = shortcode_parse_atts($matches[1]);
 
                 $atts['type'] = 'consolidator';
 
+                // 修正：UI上で「ファイル区切り（text_folder）」が選択されている場合、ショートコードに指示を伝達
+                if (isset($args['type']) && $args['type'] === 'text_folder') {
+                    $atts['merge_style'] = 'separated';
+                }
+
                 return ShortCode::get_text_files_in_folder($atts);
             }, $cleaned_content);
 
             // 5. データのパッケージ化
+            $path_entry = Dy::get_path_index($effective_id);
+            $code = $path_entry['code'] ?? "{$effective_id}_NO_CODE";
+
             $data[] = [
                 'id'      => (int)$effective_id,
+                'code'    => $code, // 追加
                 'title'   => $title,
-                'content' => trim($cleaned_content), // 前後の余計な空行を排除
+                'content' => trim($cleaned_content),
                 'time'    => (int)get_post_modified_time('U', false, $effective_id),
             ];
         }
@@ -245,6 +261,7 @@ class Kx_Consolidator {
 
         return $data;
     }
+
 
     /**
      * 生成されたデータを指定の形式で出力・保存する (Executor)
@@ -325,8 +342,11 @@ class Kx_Consolidator {
      * @param string $content 本文
      * @return string         整形済みユニット
      */
-    private static function format_structured_unit(int $id, string $title, string $content): string {
+    private static function format_structured_unit(int $id, string $title, string $content, string $code = ''): string {
         $unit = "［ID_{$id} ］\n";
+        if ($code !== '') {
+            $unit .= "［CODE_{$code} ］\n";
+        }
         $unit .= "Post_title: {$title}\n";
         $unit .= "内容:\n";
         $unit .= $content . "\n";
@@ -339,10 +359,11 @@ class Kx_Consolidator {
      * @param array[] $post_data ソースデータ
      * @return string            結合テキスト
      */
-    private static function merge_structured(array $post_data): string {
+    private static function merge_structured(array $post_data, bool $with_code = false): string {
         $blocks = [];
         foreach ($post_data as $post) {
-            $blocks[] = self::format_structured_unit($post['id'], $post['title'], $post['content']);
+            $code = $with_code ? ($post['code'] ?? '') : '';
+            $blocks[] = self::format_structured_unit($post['id'], $post['title'], $post['content'], $code);
         }
         return implode("\n\n___\n", $blocks);
     }
@@ -400,19 +421,31 @@ class Kx_Consolidator {
     /**
      * 統合実行ボタンのHTMLを生成
      *
-     * @param int    $post_id 投稿ID
-     * @param string $label   ボタンラベル
-     * @param array  $args    初期設定引数
-     * @return string         HTML
+     * @version 0.2026.0904
+     * @updated 2026-09-04
+     * @context サニタイズレベルの階層拡張（Lv0〜Lv5対応）に伴う選択肢更新、および統合ファイル保存UIフォームの構築
+     * @constraint 出力テキスト（HTML）を直接echoせず、必ず戻り値として返却すること。設定値取得はSu::get()を経由すること
+     * @param int    $post_id WP標準のPostID
+     * @param string $label   ボタンに表示するテキストラベル
+     * @param array  $args    実行オプション（'type', 'color', 'single_export', 'ai_select', 'export_format' 等を含む初期設定引数）
+     * @return string         レンダリング用のHTML文字列
      */
     private static function build_button_html(int $post_id, string $label, array $args): string {
         $action_url = get_stylesheet_directory_uri() . '/pages/export-engine.php';
 
         // 1. プロンプト選択肢の構築
         $options = [
-            'simple'     => '単純結合',
-            'structured' => '構造化データ',
+            'simple'          => '単純結合',
+            'structured'      => '構造化データ',
+            'structured_code' => '構造化データ（CODE）',
         ];
+
+        // get_text_folder ショートコードが存在する場合は、不適切な構造化結合を排除し「ファイル区切り」を設置
+        if (Kx::get_short_code($post_id) === 'get_text_folder') {
+            unset($options['structured']);
+            unset($options['structured_code']); // 追加
+            $options['text_folder'] = 'ファイル区切り';
+        }
 
         $config = Su::get('consolidator');
         $prompts = $config['prompts'] ?? [];
@@ -427,10 +460,11 @@ class Kx_Consolidator {
         // 3. サニタイズ（テキスト置換）レベルの定義
         $sanitize_levels = [
             0 => '無効 (Raw)',
-            1 => 'Lv1: 緩め',
-            2 => 'Lv2: 基準',
-            3 => 'Lv3: 強め',
-            4 => 'Lv4: パターン置換',
+            1 => 'Lv1: 基本',
+            2 => 'Lv2: 基本＋α（日付）',
+            3 => 'Lv3: 公序良俗',
+            4 => 'Lv4: 強め',
+            5 => 'Lv5: パターン置換',
         ];
 
         // 自動判定の取得
@@ -442,10 +476,8 @@ class Kx_Consolidator {
         $default_format = $_determine['format'] ?? $args['export_format'] ?? 'txt';
 
 
-
-
         // 単体書き出し（single_export）時の強制上書き設定
-        if (!empty($args['single_export'])) {
+        if (!empty($args['single_export']) && Kx::get_short_code($post_id) !== 'get_text_folder') {
             $args['type']  = 'simple';             // 構造化（階層収集）せず、その記事のみを対象に
             $args['color'] = 'hsl(200, 70%, 50%)'; // ボタン等の色を「単体用」に上書き（例：青系）
         }
@@ -491,6 +523,11 @@ class Kx_Consolidator {
         $proc_config = Su::get('text-processor');
         $default_lv = (int)($proc_config['sanitizer_settings']['level'] ?? 2);
 
+        // 追加：ファイル区切り（get_text_folder）のショートコードが存在する場合、初期選択を 0 (Raw) に上書き
+        if (\Kx::get_short_code($post_id) === 'get_text_folder') {
+            $default_lv = 0;
+        }
+
 
         foreach ($sanitize_levels as $lv => $label_text) {
             $selected_lv = ($lv === $default_lv) ? ' selected' : '';
@@ -519,6 +556,16 @@ class Kx_Consolidator {
         $html .= '</select>';
         $html .= '</div>';
 
+
+        // --- 概要（overview_to）記事の統合含入設定 ---
+        $html .= '<div style="margin-bottom:15px; padding-left: 10px;">';
+        $html .= '<label style="font-size:12px; display:inline-block; color:#444; cursor:pointer;">';
+        $html .= '<input type="checkbox" name="include_overview_to" value="1" checked style="margin-right: 5px; vertical-align: middle;">';
+        $html .= '概要（overview_to）を含んで統合';
+        $html .= '</label>';
+        $html .= '</div>';
+
+
         $html .= '<div style="padding-left: 20px;"><button type="submit" class="button button-primary">' . esc_html($label) . '</button></div>';
         $html .= '</form>';
 
@@ -529,68 +576,84 @@ class Kx_Consolidator {
      * ポストの属性からプロンプト形式とカラーを自動判定する
      *
      * @param int $post_id 対象ポストID
-     * @return array       ['type' => string, 'color' => string, 'format' => string|null]
+     * @return array       ['type' => string, 'color' => string, 'format' => string|null, 'ai_select' => string]
      */
     public static function determine_default_args(int $post_id): array {
         $config = Su::get('consolidator') ?? [];
 
-        // デフォルト値の設定
-        $_promptID = 'structured';
-        $_color = 'hsl(150, 100%, 50%)'; // スプリンググリーン
-        $format = null;
+        // 基本デフォルト値
+        $prompt    = 'structured';
+        $color     = null;
+        $format    = null;
+        $ai_select = 'no_split_mode';
 
-        if ( TitleParser::is_type('phil_xampp_driven', $post_id)) {
-            $_promptID = 'simple';
-        }else if ( TitleParser::is_type('strat_prompt_root', $post_id) ) {
-            $_promptID = '10104';
-            $_color = 'hsl(270, 100%, 50%)'; // マゼンタ系
-            $format = 'md';
-        }
+        // 1. 特殊ショートコード判定（最優先）
+        if (Kx::get_short_code($post_id) === 'get_text_folder') {
+            $prompt = 'text_folder';
+            $color  = 'hsl(180, 100%, 40%)';
+        } else {
+            $matched_setting = null;
 
-        // --- A. IDによる直接マッチング (priority_id_map) ---
-        $id_map = $config['priority_id_map'] ?? [];
-        if (isset($id_map[$post_id])) {
-            $_promptID = $id_map[$post_id];
-            $_color = 'hsl(330, 100%, 50%)'; // マゼンタ系
-        }
+            // 2. ID直接マッチング (priority_id_map)
+            $id_map = $config['priority_id_map'] ?? [];
+            if (isset($id_map[$post_id])) {
+                $matched_setting = $id_map[$post_id];
+                $color = 'hsl(330, 100%, 50%)'; // IDマップ既定色
+            }
 
-        // --- B. 文脈・型によるマッチング (context_type_map) ---
-        if ($_promptID === 'structured') { // IDマップで見つかっていない場合のみ実行
-            $type_map = $config['context_type_map'] ?? [];
-            foreach ($type_map as $key => $val) {
-                // Tp::is_type を用いて、パスの接頭辞や種別（works等）を判定
-                if (class_exists('Kx\Core\TitleParser') && TitleParser::is_type($key, $post_id)) {
-                    $_promptID = $val;
-                    $_color = 'hsl(200, 100%, 50%)'; // シアン系
-                    break; // 最初に見つかったものを優先
+            // 3. スキーマ型マッチング (context_type_map ルールリスト順次走査)
+            if ($matched_setting === null && class_exists('Kx\Core\TitleParser')) {
+                $type_rules = $config['context_type_map'] ?? [];
+                foreach ($type_rules as $key => $rule) {
+                    // types（単一文字列または配列）を取得
+                    $target_types = is_array($rule) && isset($rule['types']) ? $rule['types'] : $key;
+
+                    // TitleParser::is_type は配列を渡すと内部で OR 判定を実行
+                    if (TitleParser::is_type($target_types, $post_id)) {
+                        $matched_setting = $rule;
+                        $color = 'hsl(200, 100%, 50%)'; // 型マップ既定色
+                        break;
+                    }
+                }
+            }
+
+            // 設定値の展開（オブジェクト形式 / スカラー値の両対応）
+            if ($matched_setting !== null) {
+                if (is_array($matched_setting)) {
+                    $prompt    = $matched_setting['prompt']    ?? $prompt;
+                    $color     = $matched_setting['color']     ?? $color;
+                    $format    = $matched_setting['format']    ?? $format;
+                    $ai_select = $matched_setting['ai_select'] ?? $ai_select;
+                } else {
+                    $prompt = $matched_setting;
                 }
             }
         }
 
-
-        // --- C. 最終的な出力フォーマット成形 ---
-        if ($_promptID === 'simple' || $_promptID === 'structured') {
-            $type_value = $_promptID;
-            if ($_promptID === 'simple') {
-                $_color = 'hsl(30, 100%, 50%)'; // オレンジ
+        // 4. フォーマット成形とカラーの補完
+        if (in_array($prompt, ['simple', 'structured', 'structured_code', 'text_folder'], true)) {
+            $type_value = $prompt;
+            if ($color === null) {
+                $color = ($prompt === 'simple') ? 'hsl(30, 100%, 50%)' : 'hsl(150, 100%, 50%)';
             }
         } else {
-            // 数値ID（10104等）は with_header 形式に変換
-            $type_value = "with_header:{$_promptID}";
-            // ID指定の場合は少し色を強調（紫系）
-            if (!isset($_color)) $_color = 'hsl(270, 100%, 60%)';
+            // 数値ID等は with_header 形式に正規化
+            $type_value = (strpos((string)$prompt, 'with_header:') === 0) ? (string)$prompt : "with_header:{$prompt}";
+            if ($color === null) {
+                $color = 'hsl(270, 100%, 60%)';
+            }
         }
 
         return [
-            'type'  => $type_value,
-            'color' => $_color,
-            'format' => $format,
-            'ai_select' => 'no_split_mode' // デフォルトAI
+            'type'      => $type_value,
+            'color'     => $color,
+            'format'    => $format,
+            'ai_select' => $ai_select,
         ];
     }
 
     /**
-     * 指定された型（simple/structured/with_header）に基づきテキストを結合
+     * 指定された型（simple/structured/text_folder/with_header）に基づきテキストを結合
      *
      * @param array[] $post_data ソースデータ
      * @param array   $args      実行引数
@@ -606,13 +669,19 @@ class Kx_Consolidator {
             // プロンプト記事の本文を取得
             $prompt_content = get_post_field('post_content', (int)$prompt_id);
 
+            // JSONから該当プロンプトの with_code 設定を取得
+            $config = Su::get('consolidator');
+            $with_code = !empty($config['prompts'][$prompt_id]['with_code']);
+
             // プロンプト + 結合データ (Structured) を返す
-            return $prompt_content . "\n\n" . self::merge_structured($post_data);
+             return $prompt_content . "\n\n" . self::merge_structured($post_data, $with_code);
         }
 
         switch ($type_raw) {
-            case 'structured': return self::merge_structured($post_data);
-            default:           return self::merge_simple($post_data);
+            case 'structured_code': return self::merge_structured($post_data, true);
+            case 'structured':      return self::merge_structured($post_data, false);
+            case 'text_folder':
+            default:                return self::merge_simple($post_data);
         }
     }
 
@@ -773,7 +842,8 @@ class Kx_Consolidator {
             $header = str_replace('［ID_x］', $chunk_ids_str, $header);
 
             // 組み立て：【Part x】、指示文（ヘッダー）、形式（フッター）、データ本体
-            $full_prompt = "【Part {$count}】\n" . trim($header) . "\n\n" . trim($footer) . "\n\n" . self::merge_structured($chunk);
+            $with_code = (($args['type'] ?? '') === 'structured_code');
+            $full_prompt = "【Part {$count}】\n" . trim($header) . "\n\n" . trim($footer) . "\n\n" . self::merge_structured($chunk, $with_code);
 
             $tmp_args = array_merge($args, [
                 'sub_dir'   => 'split_parts',
@@ -792,14 +862,14 @@ class Kx_Consolidator {
      * @param int     $limit     文字数上限
      * @return array             分割されたチャンク配列
      */
-    private static function create_manual_chunks(array $main_data, int $limit): array {
+    private static function create_manual_chunks(array $main_data, int $limit, bool $with_code = false): array {
         $chunks = [];
         $current_chunk = [];
         $current_len = 0;
 
-        foreach ($main_data as $data) {
-            // 出力時と同じ形式で文字数を計測
-            $unit_text = self::format_structured_unit($data['id'], $data['title'], $data['content']);
+         foreach ($main_data as $data) {
+            $code = $with_code ? ($data['code'] ?? '') : '';
+            $unit_text = self::format_structured_unit($data['id'], $data['title'], $data['content'], $code);
             $unit_len = mb_strlen($unit_text, 'UTF-8');
 
             // 現在のチャンクが空でなく、かつ追加すると制限を超える場合は次のチャンクへ
@@ -876,7 +946,9 @@ class Kx_Consolidator {
         $count = $start_count;
         foreach ($excluded_data as $ex_data) {
             $text = "タスク：［ID_{$ex_data['id']}］以下を全体資料に追加せよ。\n\n";
-            $text .= self::format_structured_unit($ex_data['id'], $ex_data['title'], $ex_data['content']);
+            $with_code = (($args['type'] ?? '') === 'structured_code');
+            $code = $with_code ? ($ex_data['code'] ?? '') : '';
+            $text .= self::format_structured_unit($ex_data['id'], $ex_data['title'], $ex_data['content'], $code);
 
             $tmp_args = array_merge($args, [
                 'sub_dir'   => 'split_parts',
@@ -999,8 +1071,14 @@ class Kx_Consolidator {
             if (!empty($mapping)) $content = strtr($content, $mapping);
         }
 
-        // Lv4: Pattern Filters
+        // Lv4:
         if ($level >= 4) {
+            $mapping = $config['level4'] ?? [];
+            if (!empty($mapping)) $content = strtr($content, $mapping);
+        }
+
+        // Lv4: Pattern Filters
+        if ($level >= 5) {
             $patterns = $config['pattern_filters'] ?? [];
             foreach ($patterns as $pattern) {
                 $content = preg_replace($pattern, '［MASKED_PATTERN］', $content);

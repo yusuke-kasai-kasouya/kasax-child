@@ -23,10 +23,14 @@ abstract class DyPathIndexHandler {
     /**
      * パス構造の解析ロジック（メイン実体）
      *
-     * タイトルに含まれる「≫」や「＠」を分解し、階層構造、名称、更新時間等を
+     * タイトルに含まれる「≫」や「＠」を分解し、階層構造、名称、初回投稿日、更新日時等を
      * インデックス化してストレージに格納する。
      *
-     * @param int    $post_id 投稿ID
+     * @version 0.2026.0904
+     * @updated 2026-09-04
+     * @context エディタINFO等での表示要求に伴い、初回投稿日時（post_date）をpath_indexキャッシュ構造に追加
+     * @constraint 既存のキー構造（modified等）および戻り値の型定義を維持し、追加DBクエリを発生させないこと
+     * @param int    $post_id WP標準のPostID
      * @param string $mode    動作モード（'maintenance' 等）
      * @return array|null     解析済みのエントリ配列。失敗時は null
      */
@@ -34,20 +38,20 @@ abstract class DyPathIndexHandler {
         if (!$post_id) return null;
 
         // 1. 金庫から現在の状態を確認（重複処理の防止）
-        $storage = DyStorage::retrieve('path_index') ?:[];
+        $storage = DyStorage::retrieve('path_index') ?: [];
         if (isset($storage[$post_id])) {
-            return $storage[$post_id];       }
-
-
+            return $storage[$post_id];
+        }
 
         // 1. 唯一の get_post 実行
         $post = get_post($post_id);
 
         // 2. 基本情報の抽出
-        $title    = $post ? $post->post_title  : '';
-        $wp_type  = $post ? $post->post_type   : 'unknown';
-        $status   = $post ? $post->post_status : 'none';
-        $modified = $post ? $post->post_modified : null; // 更新時間を取得
+        $title     = $post ? $post->post_title    : '';
+        $wp_type   = $post ? $post->post_type     : 'unknown';
+        $status    = $post ? $post->post_status   : 'none';
+        $post_date = $post ? $post->post_date     : null; // 初回投稿日時を取得
+        $modified  = $post ? $post->post_modified : null; // 更新時間を取得
 
         $is_valid = ($wp_type === 'post' && $status === 'publish');
 
@@ -77,6 +81,15 @@ abstract class DyPathIndexHandler {
             $clean_name   = $last_part;
         }
 
+        // --- CODE の抽出（最初の半角コロン ':' より前を抽出） ---
+        $code = "{$post_id}_NO_CODE";
+        if ($clean_name !== null && ($colon_pos = strpos($clean_name, ':')) !== false) {
+            $extracted_code = trim(substr($clean_name, 0, $colon_pos));
+            if ($extracted_code !== '') {
+                $code = $extracted_code;
+            }
+        }
+
         $parent_parts = array_slice($parts, 0, -1);
 
         // --- セグメント名の基本解決 ---
@@ -96,41 +109,39 @@ abstract class DyPathIndexHandler {
             }
         }
 
-
         $entry = [
             'full'          => $title,
             'parts'         => $parts,
             'parts_names'   => $part_names,
-            'parent_path'   => implode('≫', $parent_parts), //文字列としての親パス
-            'last_part'     => $last_part,    // ラストパーツ全体
-            'last_part_name'=> $last_part_name,    // ラストパーツ全体
-            'time_slug'     => $time_element, // ＠より前の要素（10-11等）
-            'at_name'       => $clean_name,   // ＠より後の純粋な名称
+            'parent_path'   => implode('≫', $parent_parts), // 文字列としての親パス
+            'last_part'     => $last_part,                  // ラストパーツ全体
+            'last_part_name'=> $last_part_name,             // 解決済みラストパーツ名
+            'time_slug'     => $time_element,               // ＠より前の要素（10-11等）
+            'at_name'       => $clean_name,                 // ＠より後の純粋な名称
+            'code'          => $code,                       // 抽出されたCODE
 
             'depth'         => $count,
             'wp_type'       => $wp_type,
             'status'        => $status,
-            'modified'      => $modified, // Dyに追加
+            'post_date'     => $post_date,
+            'modified'      => $modified,
             'valid'         => $is_valid,
             'type'          => 'default', // 仮置き
-            'genre'         => 'none', // 仮置き
-            'markers'         => [],        // 追加
+            'genre'         => 'none',    // 仮置き
+            'markers'       => [],
         ];
 
-
-
-        // 4. 注意：identify_post_type 内での get_title 呼び出しに備えて先行登録
+        // 4. 注意：identify_post_attributes 内での get_title 呼び出しに備えて先行登録
         $storage[$post_id] = $entry;
         DyStorage::store('path_index', $storage);
 
         // 5. システムタイプ・フラグ判定
-        $attr = self::identify_post_attributes($post_id , $mode );
-        $entry['type']   = $attr['type'];  // 例: 'Μ', 'σ'
-        $entry['genre']  = $attr['genre'];  // 例: 'strat_sales', 'arc_psy_game_theory'
-        $entry['markers']  = $attr['markers']; // 例: 'prod_character_core', 'prod_character_relation'
+        $attr = self::identify_post_attributes($post_id, $mode);
+        $entry['type']    = $attr['type'];    // 例: 'Μ', 'σ'
+        $entry['genre']   = $attr['genre'];   // 例: 'strat_sales', 'arc_psy_game_theory'
+        $entry['markers'] = $attr['markers']; // 例: 'prod_character_core', 'prod_character_relation'
 
-
-        // 4. 金庫（Storage）へ保存
+        // 6. 金庫（Storage）へ確定保存
         $storage[$post_id] = $entry;
         DyStorage::store('path_index', $storage);
 

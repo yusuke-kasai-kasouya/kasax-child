@@ -1,6 +1,23 @@
 <?php
 /**
  * [Path]: templates/components/editor/inline-modal.php
+ *
+ * @version 0.2026.0904
+ * @updated 2026-09-04
+ * @context エディタINFOアコーディオン内における投稿日時・更新日時の出力対応およびスタイル定義
+ * @constraint 既存のDOM構成およびJavaScriptイベントを破壊しないこと
+ *
+ * @var int         $post_id      WP標準のPostID
+ * @var int         $edit_id      編集対象ID（実体IDまたは本体ID）
+ * @var string      $editor_mode  エディターの動作モード
+ * @var string|null $layout_mode  配置制御用のレイアウトモード
+ * @var string      $label        ボタンラベル
+ * @var string      $title        モーダルタイトル
+ * @var string      $paint        背景色等のインラインスタイル
+ * @var string      $traits       CSSカスタム変数等のインラインスタイル
+ * @var string      $info_label   インフォメーションラベル
+ * @var string      $info_html    インフォメーションのリンク集HTML（日時情報を含む）
+ * @var string      $save_html    保存ボタン周辺のUI（コンソリデータ）HTML
  */
 $uid = "ed-container-{$post_id}-{$edit_id}";
 
@@ -9,15 +26,18 @@ $is_sidebar_insert = ($editor_mode === 'sidebar_insert');
 $modal_class = $is_sidebar_insert ? 'kx-inline-editor--fixed' : 'kx-inline-editor--absolute';
 
 
+// 表示レイアウト用のモードを決定（layout_modeがあれば優先し、なければ従来のeditor_modeを使用）
+$display_mode = isset($layout_mode) ? $layout_mode : $editor_mode;
+
 // デフォルトは右寄せ (right:0)
 $position_style = "right: 0px;width: 900px;";
-if ($editor_mode === 'matrix_editor_left') {
-    $position_style = "left: 0px;width: 700px;";// update_left モードの時は左寄せ
-} else if($editor_mode === 'matrix_editor_right' ){
-    $position_style = "right: 0px;width: 700px;";// update_left モードの時は左寄せ
-} else if($editor_mode === 'line' ) {
+if ($display_mode === 'matrix_editor_left') {
+    $position_style = "left: 0px;width: 700px;"; // 左寄せ（右展開）
+} else if($display_mode === 'matrix_editor_right' ){
+    $position_style = "right: 0px;width: 700px;"; // 右寄せ（左展開）
+} else if($display_mode === 'line' ) {
     $position_style = "right: 0px;width: 800px;";
-} else if($editor_mode === 'ghost' ) {
+} else if($display_mode === 'ghost' ) {
     $position_style = "right: 0px;width: 800px;";
 }
 
@@ -210,6 +230,16 @@ if(!$edit_id){
 
 }
 .ed-info-content a:hover { background: #444; border-color: #88ccff; }
+
+/* 投稿日時・更新日時表示用スタイル */
+.ed-info-content .ed-info-dates {
+    display: inline-block;
+    padding: 2px 5px;
+    margin-top: 3px;
+    border-left: 2px solid #555;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
 </style>
 
 <script>

@@ -320,7 +320,9 @@ class dbkx1_DataManager extends Abstract_DataManager {
             'ghost_to'        => null,
         ];
 
-        $pattern = '/\[(raretu|ghost|kx_format|kx_tp)(.*?)\]|^タグ：(.*)$/mu';
+
+
+        $pattern = '/\[(raretu|ghost|kx_format|kx_tp|get_text_folder)(.*?)\]|^タグ：(.*)$/mu';
 
         if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
@@ -353,6 +355,10 @@ class dbkx1_DataManager extends Abstract_DataManager {
                     case 'kx_tp':
                         $results['short_code'] = 'kx_tp';
                         break;
+                    case 'get_text_folder';
+                        $results['short_code'] = 'get_text_folder';
+                        break;
+
                 }
             }
         }
@@ -632,7 +638,7 @@ class dbkx1_DataManager extends Abstract_DataManager {
                 ],
                 ['%d', '%s', '%d']
             );
-            \Kx\Utils\KxMessage::info("[$post_id]：概要レコード($overview_id)を新規作成しタグ「$tag」を設定しました。");
+            \Kx\Utils\KxMessage::info("[$post_id]：概要レコード($overview_id)を新規作成しタグ「tag」を設定しました。");
         } else {
             // --- B. 既存更新 ---
             $wpdb->update(

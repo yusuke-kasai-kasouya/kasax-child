@@ -33,7 +33,8 @@ class SystemConfig {
         'arc_shared_works_character_subs' => true,
         'arc_shared_works_prim'   => true,
         'arc_shared_works_subs'   => true,
-        'arc_shared_person'  => true,
+        'arc_shared_biography'  => true,
+
     ];
 
     //path_indexのタイプ。
@@ -43,7 +44,7 @@ class SystemConfig {
         'arc_shared_works_character_subs',
         'arc_shared_works_prim',
         'arc_shared_works_subs',
-        'arc_shared_person',
+        'arc_shared_biography',
         'arc_shared_root',
         'prod_work_production_log',
         'prod_work_production_logs',
@@ -94,7 +95,7 @@ class SystemConfig {
         '/(?<!『)≫(?!』)/'				   =>[ ''	  , '＞'    ],		 //特殊文字
         '/<p><\/p>/'						=>[ ''	   , ''      ],	//削除
         '/\n□/'		    		           =>[ ''	  , "\n✚"    ],		 //特殊文字
-        '/\n　/'		    		        =>[ ''	  , "\n"    ],		 //特殊文字
+        //'/\n　/'		    		        =>[ ''	  , "\n"    ],		 //特殊文字
         //'/\n　/' 							=> "\n",
     ];
 

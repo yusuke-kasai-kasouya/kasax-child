@@ -212,10 +212,19 @@ class TaskBoard {
      */
     private static function get_page_top_schema() {
         return [
+            'in' => [
+                'content_type' => 'inserter',
+                'title'        => "LIST",
+                'use_outline'  => true,
+                'args'         => [
+                    'label' => "NEW＋",
+                    'title' => "∬99",
+                ],
+            ],
             'section_list' => [
                 'content_type' => 'launcher',
-                'title'        => 'List',
-                'args'         => ['mode' => 'link', 'search' => '∬', 'depth' => 1],
+                'title'        => 'List(t=70)',
+                'args'         => ['mode' => 'link', 'search' => '∬', 'depth' => 1, 't'      => 70],
                 'use_outline'  => true,
             ],
         ];
@@ -277,12 +286,15 @@ class TaskBoard {
      * 個別コンポーネントの出力
      */
     private static function render_component(array $data) {
+
         $type = (string)($data['content_type'] ?? 'ERROR');
         $level = (int)($data['level'] ?? 2);
         $tag = 'h' . max(1, min(6, $level));
         $title = (string)($data['title'] ?? 'Untitled Section');
 
         $html = sprintf('<%1$s>%2$s</%1$s>', $tag, esc_html($title));
+
+
 
         switch ($type) {
             case 'template':

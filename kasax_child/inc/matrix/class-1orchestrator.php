@@ -43,6 +43,7 @@ class Orchestrator {
             'where'      => '',
             'where_json' => '',
             'tougou'     => '',
+            'off_merge'     => '',
             'order'      => 'ASC',
             'sort'       => '',
             'sort_top'   => '',
@@ -130,6 +131,14 @@ class Orchestrator {
                 // 1階層目（初回呼び出し）はフルマトリックス形式で出力
                 $output = Renderer::render($matrix, $context);
             }
+
+            // off_merge が指定されている場合、先頭に簡素な通知バナーを付与
+            if (!empty($this->atts['off_merge'])) {
+                $off_val = esc_html($this->atts['off_merge']);
+                $notice  = "<div class='kx-off-tougou-notice' style='font-size: 0.75rem; color: #ffaa00; background: rgba(255,170,0,0.1); border-left: 3px solid #ffaa00; padding: 3px 8px; margin-bottom: 6px; font-family: monospace; display: inline-block;'>⛔ TOGOU OFF [{$off_val}]</div>";
+                $output  = $notice . $output;
+            }
+
         } catch (\Exception $e) {
             // 例外をキャッチした場合に赤い1行を返す
             return sprintf(

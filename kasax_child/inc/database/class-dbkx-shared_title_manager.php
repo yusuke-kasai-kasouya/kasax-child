@@ -8,31 +8,36 @@ namespace Kx\Database;
 use Kx\Core\SystemConfig as Su;
 use Kx\Core\DynamicRegistry as Dy;
 use \Kx\Database\dbkx1_DataManager as dbkx1;
-use \Kx\Database\Hierarchy;
+//use \Kx\Database\Hierarchy;
 //use \Kx\Utils\KxMessage as Msg;
 
 class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * テーブル名を取得（内部用）
+     *
+     * @global \wpdb $wpdb WordPressデータベースオブジェクト
+     * @return string
      */
-    protected static function t() {
+    protected static function t(): string {
         global $wpdb;
         return $wpdb->prefix . 'kx_shared_title';
     }
 
-
     /**
      * ContextManager からの呼び出しを受けて同期を実行（司令塔）
      * 系統（Β, γ, σ, δ）を跨いで「タイトル末尾」を基準に名寄せを行う
+     *
+     * @param int $post_id 対象のポストID
+     * @return bool|null
      */
-    public static function sync($post_id) {
-        // 1. ガード処理（二重処理・再帰ループ防止） [cite: 12]
+    public static function sync(int $post_id): ?bool {
+        // 1. ガード処理（二重処理・再帰ループ防止）
         $lock_key = 'dbkx_shared_processed_' . (int)$post_id;
-        if (Dy::get($lock_key)) return;
+        if (Dy::get($lock_key)) return null;
         Dy::set($lock_key, true);
 
-        // 2. 解析データの準備（Dyからの取得と対象判定） [cite: 10, 11]
+        // 2. 解析データの準備（Dyからの取得と対象判定）
         $path_index = Dy::set_path_index($post_id);
         if (!self::is_sync_target($path_index)) return null;
 
@@ -50,7 +55,7 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         $base_title = implode('≫', array_slice($parts, 1));
         $label = self::extract_label($path_index);
 
-        // 4. 同期データの構築（フェーズ別保存戦略） [cite: 12]
+        // 4. 同期データの構築（フェーズ別保存戦略）
         $data = [
             'title'        => $base_title,
             $target_column => (int)$post_id,
@@ -58,7 +63,7 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         ];
 
         if ($prefix === 'δ') {
-            // 資料系統（δ）の場合は本文解析を含むペイロードを構築 [cite: 15]
+            // 資料系統（δ）の場合は本文解析を含むペイロードを構築
             $sync_payload = self::build_sync_payload($post_id, $label, $base_title, $path_index);
             if ($sync_payload) {
                 $data = array_merge($data, $sync_payload);
@@ -75,11 +80,13 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return self::update_table($data, $post_id);
     }
 
-
     /**
      * 同期対象かどうかの検証
+     *
+     * @param array|false|null $path_index パス解析データ
+     * @return bool
      */
-    private static function is_sync_target($path_index) {
+    private static function is_sync_target($path_index): bool {
         if (!$path_index || !$path_index['valid']) return false;
 
         $arc_type = $path_index['type'] ?? '';
@@ -88,17 +95,15 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return isset(Su::SHARED_ROOT_TYPES[$arc_type]) || isset(Su::SHARED_LABEL_TYPES[$arc_type]);
     }
 
-
-
-
-
     /**
      * タイトル名からレコードをまるごと取得する
-     * @param string $title 概念名
+     *
+     * @global \wpdb $wpdb WordPressデータベースオブジェクト
+     * @param string $title  概念名
      * @param string $output ARRAY_A (連想配列) または OBJECT
      * @return array|object|null レコードが存在しない場合は null
      */
-    public static function get_record_by_title($title, $output = ARRAY_A) {
+    public static function get_record_by_title(string $title, string $output = ARRAY_A) {
         global $wpdb;
         $table = self::t();
 
@@ -113,11 +118,13 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return $row ?: null;
     }
 
-
     /**
      * ラベル抽出
+     *
+     * @param array|false|null $path_index パス解析データ
+     * @return string
      */
-    private static function extract_label($path_index) {
+    private static function extract_label($path_index): string {
         $arc_type = $path_index['type'] ?? '';
 
         // List系に含まれている場合のみタイプ名をラベルとして返す
@@ -128,12 +135,17 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return '';
     }
 
-
     /**
      * コンテンツから日付とメタ情報を抽出し、DBカラムごとに成形して返す
      * 「＠概要」記事の場合は親記事へデータを委譲する
+     *
+     * @param int              $post_id    ポストID
+     * @param string           $label      系統ラベル
+     * @param string           $base_title 概念名
+     * @param array|false|null $path_index パス解析データ
+     * @return array
      */
-    public static function build_sync_payload($post_id, $label, $base_title, $path_index) {
+    public static function build_sync_payload(int $post_id, string $label, string $base_title, $path_index): array {
 
         // --- 1. 解析対象の決定（概要記事があればそこからデータを吸い上げる） ---
         $overview_from = dbkx1::get_overview_from($post_id);
@@ -211,10 +223,11 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * JSONデータの中から8桁の数値（日付）をすべて探し、その中の最小値を返す
-     * @param string|array $json_data JSON文字列または連想配列
+     *
+     * @param string|array|null $json_data JSON文字列または連想配列
      * @return int|null 最小の日付（8桁）、見つからない場合はnull
      */
-    public static function extract_earliest_date_from_json($json_data) {
+    public static function extract_earliest_date_from_json($json_data): ?int {
         // 文字列ならデコード、配列ならそのまま使用
         $data = is_string($json_data) ? json_decode($json_data, true) : $json_data;
 
@@ -240,11 +253,17 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return min($dates);
     }
 
-
     /**
      * 親記事のSharedレコードに対して、概要記事から吸い上げたデータを書き込む
+     *
+     * @global \wpdb $wpdb WordPressデータベースオブジェクト
+     * @param string       $parent_title 親記事のタイトル
+     * @param int          $parent_id    親記事のポストID
+     * @param int          $date         日付データ
+     * @param array|string $json         マージ対象のJSONデータ
+     * @return void
      */
-    private static function update_parent_shared_data($parent_title, $parent_id, $date, $json) {
+    private static function update_parent_shared_data(string $parent_title, int $parent_id, int $date, $json): void {
         global $wpdb;
         $table = self::t();
 
@@ -284,12 +303,14 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         $wpdb->replace($table, $parent_data);
     }
 
-
-
     /**
      * 最軽量：strpos を用いたメタ情報抽出
+     *
+     * @param string $content     解析対象のコンテンツ
+     * @param array  $pickup_list 抽出対象のキーリスト
+     * @return array
      */
-    private static function extract_metadata($content, $pickup_list) {
+    private static function extract_metadata(string $content, array $pickup_list): array {
         $results = [];
         if (empty($content) || empty($pickup_list)) return $results;
 
@@ -309,8 +330,12 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * 最軽量・最適化版：日付情報（Date：）の抽出
+     *
+     * @param string $content 解析対象のコンテンツ
+     * @param string $label   系統ラベル
+     * @return array
      */
-    private static function extract_date_optimized($content, $label) {
+    private static function extract_date_optimized(string $content, string $label): array {
         $primary_date = 0;
         $extended_dates = [];
         $last_pos = 0;
@@ -368,8 +393,11 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * A/Bロジック振り分け
+     *
+     * @param string $str 日付文字列
+     * @return int
      */
-    private static function parse_date_string($str) {
+    private static function parse_date_string(string $str): int {
         $str = mb_convert_kana($str, 'n', 'UTF-8');
         $str = str_replace([',', ' '], '', $str);
 
@@ -381,8 +409,11 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * ロジックA：標準
+     *
+     * @param string $str 日付文字列
+     * @return int
      */
-    private static function logic_a_standard($str) {
+    private static function logic_a_standard(string $str): int {
         $str = str_replace(['西暦', '-'], ['', '/'], $str);
         $pattern = '/^(-?\d+)(?:年|\/)?(\d{1,2})?(?:月|\/)?(\d{1,2})?(?:日)?/u';
 
@@ -398,8 +429,11 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * ロジックB：特殊（歴史・宇宙）
+     *
+     * @param string $str 特殊な日付文字列
+     * @return int
      */
-    private static function logic_b_special($str) {
+    private static function logic_b_special(string $str): int {
         $year_num = self::convert_kanji_to_num($str);
         if ($year_num === 0) return 0;
 
@@ -411,8 +445,13 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * BIGINT形式合成 (Year * 10000 + MMDD)
+     *
+     * @param int $y 年
+     * @param int $m 月 (デフォルト 0)
+     * @param int $d 日 (デフォルト 0)
+     * @return int
      */
-    private static function format_to_bigint($y, $m = 0, $d = 0) {
+    private static function format_to_bigint(int $y, int $m = 0, int $d = 0): int {
         $year = (int)$y;
         if ($year === 0) return 0;
 
@@ -428,8 +467,11 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * 漢字・単位の数値変換
+     *
+     * @param string $str 変換対象の文字列
+     * @return int
      */
-    private static function convert_kanji_to_num($str) {
+    private static function convert_kanji_to_num(string $str): int {
         $str = mb_convert_kana($str, 'n', 'UTF-8');
         $str = str_replace([',', ' ', '　', '-', '西暦', '年前', '紀元前'], '', $str);
 
@@ -448,11 +490,14 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return (int)$total;
     }
 
-
     /**
      * 最軽量を追求したメタ情報抽出
+     *
+     * @param string $content 解析対象のコンテンツ
+     * @param array  $json    マージ先の既存配列
+     * @return array
      */
-    public static function extract_metadata_to_json($content, $json = []) {
+    public static function extract_metadata_to_json(string $content, array $json = []): array {
         $pickup_list = Su::get('system_internal_schema')['db_shared_json_works'] ?? [];
         if (empty($pickup_list) || empty($content)) return $json;
 
@@ -483,55 +528,29 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return array_merge($json, $_array);
     }
 
-
-
-
-
     /**
      * タグ情報の取得（dbkx1から取得）
-     * dbkx1側で既に |tag| 形式に正規化されていることを前提とする
+     *
+     * @param int $post_id ポストID
+     * @return string
      */
-    private static function extract_tags($post_id) {
+    private static function extract_tags(int $post_id): ?string {
         // dbkx1::get_tag が |タグA| |タグB| という文字列を返す場合
         return dbkx1::get_tag($post_id);
     }
 
-
-
-
     /**
      * 共有タイトルテーブルのメンテナンス（削除 ＆ 全同期）
+     *
+     * @global \wpdb $wpdb WordPressデータベースオブジェクト
+     * @return int
      */
-    public static function maintenance_sync_all() {
+    public static function maintenance_sync_all(): int {
         global $wpdb;
         $table_shared = self::t();
         $table_kx0 = $wpdb->prefix . 'kx_0';
 
-        // --- 1. 不要レコードの削除（JOINによる一括処理） ---
-
-        /*
-        // 全く存在しないタイトルを消す
-        $wpdb->query("
-            DELETE s FROM $table_shared s
-            RIGHT JOIN $table_kx0 k ON s.title = k.title
-            WHERE k.title IS NULL
-        ");
-        */
-
-        // IDの参照先タイトルが不一致（ゴミデータ）のものを消す
-        /*
-        $id_cols = ['id_lesson', 'id_sens', 'id_study', 'id_data'];
-        foreach ($id_cols as $col) {
-            $wpdb->query("
-                DELETE s FROM $table_shared s
-                INNER JOIN $table_kx0 k ON s.$col = k.id
-                WHERE s.$col > 0
-                AND s.title NOT LIKE CONCAT('%%', k.title)
-            ");
-        }
-            */
-
-        // --- 2. 全件同期（Dyの定義に基づき動的に実行） ---
+        // --- 全件同期（Dyの定義に基づき動的に実行） ---
 
         $sync_types = Dy::get_shared_sync_types();
         if (empty($sync_types)) return 0;
@@ -555,12 +574,13 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
         return count($targets);
     }
 
-
     /**
      * SharedTitle レイヤーの不整合チェックおよびクリーンアップ
-     * kx_0のtitleは階層パスを含むため、末尾一致またはクレンジング後の比較を行う
+     *
+     * @global \wpdb $wpdb WordPressデータベースオブジェクト
+     * @return string
      */
-    public static function maintenance_cleanup_shared_titles() {
+    public static function maintenance_cleanup_shared_titles(): string {
         global $wpdb;
         $table_shared = self::t();
         $table_kx0 = $wpdb->prefix . 'kx_0';
@@ -620,40 +640,59 @@ class dbkx_SharedTitleManager extends Abstract_DataManager {
 
     /**
      * DBから生のデータを取得し、Dyキャッシュに格納する
-     * * @param int $post_id
+     *
+     * @param int $post_id ポストID
      * @return array|null
      */
-    public static function load_raw_data($post_id) {
+    public static function load_raw_data(int $post_id): ?array {
         return parent::load_raw_data_common($post_id, 'db_kx1');
     }
 
-
-
     /**
      * DB書き込み（集約更新）
-     * 概念（title）をキーに、各系統のIDを保護しながら更新する
+     *
+     * 概念（title）をキーに、各系統のIDを保護しながら更新します。
+     * 同一ポストIDが別の系統カラムに既に登録されていた場合、古いカラムのIDを自動的にクリアします。
+     *
+     * @global \wpdb $wpdb WordPressデータベースオブジェクト
+     * @param array  $data    保存対象のデータ配列
+     * @param int    $post_id 同期対象のポストID
+     * @return bool           変更があり実際に更新された場合は true、それ以外は false
      */
-    private static function update_table($data, $post_id) {
+    private static function update_table(array $data, int $post_id): bool {
         global $wpdb;
         $table = self::t();
         $title = $data['title'] ?? '';
 
-        if (empty($title)) return false;
+        if (empty($title)) {
+            return false;
+        }
 
         // 配列のままではDBに入れられないため、jsonカラムがあればエンコードする
         if (isset($data['json']) && is_array($data['json'])) {
             $data['json'] = wp_json_encode($data['json'], JSON_UNESCAPED_UNICODE);
         }
 
+        /** @var array|null $old_data */
         $old_data = $wpdb->get_row(
             $wpdb->prepare("SELECT * FROM $table WHERE title = %s", $title),
             ARRAY_A
         );
 
-        // 2. 他系統IDの保護
-        // REPLACE INTO で既存レコードが消えるのを防ぐため、今回の更新対象外のIDを引き継ぐ
+        // 2. 他系統IDの保護、および同一ポストの系統変更に伴う古いカラムのクレンジング
+        // REPLACE INTO で既存レコードが消えるのを防ぐため、今回の更新対象外のIDを引き継ぐ。
+        // ただし、自ポストが以前に別系統カラムへ登録されていた痕跡がある場合は、その古いカラムのみ意図的に 0 にリセットする。
         if ($old_data) {
             foreach (['id_lesson', 'id_sens', 'id_study', 'id_data'] as $col) {
+                // 自ポストが以前登録されていた別系統カラムを発見した場合の処理
+                if (isset($old_data[$col]) && (int)$old_data[$col] === $post_id) {
+                    if (!isset($data[$col])) {
+                        $data[$col] = 0; // 古い系統側の登録をクリアする
+                        continue;
+                    }
+                }
+
+                // 自分以外の他人が持っている他系統IDはそのまま引き継ぐ（保護）
                 if (!isset($data[$col]) && !empty($old_data[$col])) {
                     $data[$col] = $old_data[$col];
                 }

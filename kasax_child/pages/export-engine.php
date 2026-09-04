@@ -31,6 +31,7 @@ try {
         'ai_select' => $ai_select,
         'sanitize_level' => (int)($_POST['sanitize_level'] ?? 0), // 新設
         'text_change' => isset($_POST['checkbox_text_change']),
+        'include_overview_to' => isset($_POST['include_overview_to']),
     ];
 
     // run() は成功時に生成されたテキスト(string)を返し、致命的失敗時に false を返す

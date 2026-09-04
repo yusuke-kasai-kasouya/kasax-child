@@ -535,6 +535,44 @@ abstract class DyDomainHandler {
         // 3. 結果をキャッシュに保存して返却
         // ※ set_content_cache の実装に合わせて適切に保存してください
         // self::set_content_cache($post_id, 'descendants', $ids);
+        Dy::set_content_cache($post_id, 'descendants', $ids);
+
+        return $ids;
+    }
+
+    /**
+     * 特定の投稿の末端最下部までの全子孫（全階層の投稿ID配列）を取得する
+     * キャッシュがあればそれを返し、なければ KxQuery で前方一致による一括検索を行う
+     *
+     * @param int $post_id 親となる投稿ID
+     * @return int[] 全子孫投稿のID配列
+     */
+    public static function get_descendants_all($post_id) {
+        if (!$post_id = (int)$post_id) return [];
+
+        // 1. キャッシュチェック（直下用の 'descendants' と競合しない別キーを使用）
+        $cached_ids = Dy::get_content_cache($post_id, 'descendants_all');
+        if (is_array($cached_ids)) {
+            return $cached_ids;
+        }
+
+        // 2. パスインデックスを取得して検索条件を構成
+        $path_index = Dy::get_path_index($post_id);
+        if (!$path_index) return [];
+
+        // 親のパスを前方一致させつつ、階層制限（depth）をかけずに全深さを走査
+        $query = new KxQuery([
+            'search'     => $path_index['full'], // 親のフルパス（例：≫第1章）
+            'title_mode' => 'prefix',            // 前方一致
+        ]);
+
+        $ids = $query->get_ids();
+
+        // 3. 親ID自体（前方一致の対象となるため）を結果から確実に除外
+        $ids = array_values(array_diff($ids, [$post_id]));
+
+        // 4. 結果をキャッシュに保存して返却
+        Dy::set_content_cache($post_id, 'descendants_all', $ids);
 
         return $ids;
     }

@@ -1,5 +1,7 @@
 # kasax_child (kasax Child Theme)
 
+**Version: 0.2026.0904**
+
 > **Dynamic Intelligence Storage: Mapping Conceptual Hierarchies and Multi-perspective Thinking.**
 
 ## Overview
@@ -24,16 +26,14 @@ This project is an "experimental implementation" designed to optimize thought or
 
 This theme aims to multidimensionalize information through three core pillars:
 
-**Multi-Tree Deployment of Knowledge**:
+### Multi-Tree Deployment of Knowledge
 By using the logical path separator "≫" in titles, a single article can exist simultaneously in multiple contexts, allowing for the construction of complex thought hierarchies.
 
 ---
 
 ## Main Features & Shortcodes
 
-While there are too many features to cover in their entirety, here are the core functions:
-
-### 1. Hierarchical Navigator `[raretu]`
+### 1. Hierarchical Navigator `［raretu］`
 
 By writing `A≫B≫C` in the post title, the theme automatically analyzes the directory structure.
 
@@ -48,18 +48,21 @@ Define the nature of information by adding specific characters to the beginning 
 | --- | --- | --- |
 | **κ** | Planning | Strategy / Milestones |
 | **λ** | SYSTEM | System Specifications |
-| **Μ** | Theory | Theoretical Background / Analysis |
+| **Μ** | Theory | Theoretical Framework / Analysis |
 | **Β/γ/σ/δ** | Shared Resources | Lessons / Sensitivity / Research / Documentation |
 | **∫** | Production | Prototype / Experiment / Draft |
 | **∬00** | Production | Final Production (Execution) |
 
-### 3. Ghost Clone `[ghost id=xxx]`
+### 3. Ghost Clone `［ghost id=xxx］`
 
 Opens a "window" to a specific post. It creates a clone page that synchronizes and displays the content of the referenced post in real-time.
 
-### 4. Advanced Link `[kx id=xxx t=60]`
+### 4. Inline Modal Editor
 
-Generates internal links by ID. By switching the `t` (type) parameter, you can flexibly change the density of information, such as "link only," "excerpt view," or "full content expansion."
+Provides a lightweight, in-place editing interface without page transitions.
+
+* **INFO Panel**: Displays initial publication date and latest modification date.
+* **Consolidator UI**: Integrated tool to aggregate multiple posts into formatted text or EPUB for AI workflows.
 
 ---
 
@@ -87,7 +90,7 @@ The system is highly modularized and controlled by the following class groups:
 
 | Filename | Class Name | Description |
 | --- | --- | --- |
-| class-editor.php | `Editor` | Integrated editor controlling modal-based post updates and Ghost editing. |
+| class-editor.php | `Editor` | Modal editor with INFO panel displaying post/modified dates and Ghost integration. |
 | class-KxLink.php | `KxLink` | Generates context-optimized card-style links dynamically. |
 | class-post_card.php | `PostCard` | Generates card-format HTML including summaries based on hierarchical paths. |
 | class-QuickInserter.php | `QuickInserter` | Component to insert new posts while inheriting parent path context and color settings. |
@@ -96,25 +99,25 @@ The system is highly modularized and controlled by the following class groups:
 
 | Filename | Class Name | Description |
 | --- | --- | --- |
-| class-kx-ai-bridge.php | `KxAiBridge` | Links post data with AI metadata and optimizes context supply. |
+| class-kx-ai-bridge.php | `KxAiBridge` | Links post data with AI metadata and optimizes LLM context supply. |
 | class-kx-ajax-handler.php | `AjaxHandler` | Handles Ajax requests from the frontend to various core classes. |
 | class-kx-assets.php | `KxAssets` | Asset manager that scans and enqueues CSS/JS based on hierarchy. |
 | class-kx-color-manager.php | `ColorManager` | Dynamic engine solving HSL CSS variables based on title patterns and context. |
-| class-kx-consolidator.php | `KxConsolidator` | Orchestrates recursive content collection, integration, and file export (TXT/EPUB). |
-| class-kx-content-filter.php | `ContentFilter` | Main filters via `the_content` hook for Ghost summoning and Markdown conversion. |
-| class-kx-Content-Processor.php | `ContentProcessor` | Content conversion engine for Markdown parsing and shorthand expansion. |
+| class-kx-consolidator.php | `KxConsolidator` | Orchestrates multi-level sanitization (Lv0-5) and AI model chunk splitting. |
+| class-kx-content-filter.php | `ContentFilter` | Main filters via `the_content` hook for Ghost summoning and conversion. |
+| class-kx-Content-Processor.php | `ContentProcessor` | Content conversion engine for Markdown parsing and custom shorthand expansion. |
 | class-kx-context_manager.php | `ContextManager` | Orchestrator for hierarchy analysis and search table synchronization. |
 | class-kx-director.php | `KxDirector` | Facade class managing shortcode registration and component access. |
-| class-kx-dy-content-handler.php | `DyContentHandler` | Data handler for raw content, cache replenishment, and metadata retrieval. |
-| class-kx-dy-handler.php | `DyDomainHandler` | Base status manager for domain monitoring and external system integration. |
-| class-kx-dynamicRegistry.php | `DynamicRegistry` | Data hub for in-memory management, providing access to specialized handlers. |
-| class-kx-dy-path-index-handler.php | `DyPathIndexHandler` | Path analyzer solving parent nodes and definitions from "≫" separators. |
+| class-kx-dy-content-handler.php | `DyContentHandler` | Data handler for raw content and three-layer cache (raw/ana/vis). |
+| class-kx-dy-handler.php | `DyDomainHandler` | Base status manager for domain monitoring and external integration. |
+| class-kx-dynamicRegistry.php | `DynamicRegistry` | Data hub for in-memory management across the theme. |
+| class-kx-dy-path-index-handler.php | `DyPathIndexHandler` | Path analyzer solving "≫" separators, definitions, and post/modified dates. |
 | class-kx-dy-storage.php | `DyStorage` | Low-level cache storage physically holding domain-specific properties. |
 | class-kx-LaravelClient.php | `LaravelClient` | API client for communicating with external Laravel applications. |
 | class-kx-outline_manager.php | `OutlineManager` | Analyzes heading levels to generate hierarchical Table of Contents HTML. |
 | class-kx-query.php | `KxQuery` | Multi-layered search engine combining custom DB, API, and WP_Query. |
 | class-kx-save-manager.php | `SaveManager` | Ensures data integrity during post saving, including custom table syncing. |
-| class-kx-short-code.php | `ShortCode` | Execution handler for shortcodes like `dump`, `ghost`, and `raretu`. |
+| class-kx-short-code.php | `ShortCode` | Execution handler for shortcodes like `ghost` and `raretu`. |
 | class-kx-systemConfig.php | `SystemConfig` | Config manager for constants, paths, and external JSON settings. |
 | class-kx-title-parser.php | `TitleParser` | Semantic analysis engine determining "post types" based on naming conventions. |
 
@@ -128,19 +131,19 @@ The system is highly modularized and controlled by the following class groups:
 | class-dbkx-1-data-manager.php | `dbkx1_DataManager` | Manages content metadata and shortcode extraction for the `kx_1` table. |
 | class-dbkx-ai-metadata-mapper.php | `dbKxAiMetadataMapper` | Maintenance and retrieval for AI-related management tables. |
 | class-dbkx-Hierarchy.php | `Hierarchy` | Maps hierarchical path information to the `kx_hierarchy` table. |
-| class-dbkx-shared_title_manager.php | `dbkx_SharedTitleManager` | Cross-domain title manager for linking IDs across different prefixes. |
+| class-dbkx-shared_title_manager.php | `dbkx_SharedTitleManager` | Cross-domain title manager for linking concept IDs across different prefixes. |
 
 ### 📂 launcher
 
 | Filename | Class Name | Description |
 | --- | --- | --- |
-| class-kx-post-launcher.php | `KxPostLauncher` | Front-end launcher controlling the execution of the main `kx` shortcode. |
+| class-kx-post-launcher.php | `KxPostLauncher` | Front-end launcher controlling the execution and density of the `kx` shortcode. |
 
 ### 📂 matrix
 
 | Filename | Class Name | Description |
 | --- | --- | --- |
-| class-1orchestrator.php | `Orchestrator` | Pipeline controller for the `raretu` shortcode execution. |
+| class-1orchestrator.php | `Orchestrator` | Pipeline controller for Matrix rendering and data collection. |
 | class-2query.php | `Query` | Dedicated query builder for matrix/grid data extraction. |
 | class-3data_collector.php | `DataCollector` | Pre-processor for building datasets required for timeline/matrix rendering. |
 | class-4processor.php | `Processor` | Logic processor that formats collected data into specific matrix structures. |
@@ -150,15 +153,15 @@ The system is highly modularized and controlled by the following class groups:
 
 | Filename | Class Name | Description |
 | --- | --- | --- |
-| class-kx-parsedown.php | `KxParsedown` | Custom Markdown renderer based on ParsedownExtra. |
+| class-kx-parsedown.php | `KxParsedown` | Custom Markdown renderer based on ParsedownExtra with LaTeX protection. |
 
 ### 📂 utils
 
 | Filename | Class Name | Description |
 | --- | --- | --- |
 | class-kx-message.php | `KxMessage` | Utility for stack-based management of system errors and notifications. |
-| class-kx-workstation.php | `WorkStation` | Advanced task board that dynamically scans for existing content by prefixes to provide situational UI for creation and management. |
-| class-kx-taskboard.php | `TaskBoard` | Generates task-oriented dashboards for standard contexts like search, menus, and top lists. |
+| class-kx-workstation.php | `WorkStation` | Advanced task board providing situational UI based on prefix scans. |
+| class-kx-taskboard.php | `TaskBoard` | Generates task-oriented dashboards for standard contexts. |
 | class-kx-template.php | `KxTemplate` | Specialized template engine for separating logic from presentation. |
 | class-kx-time.php | `Time` | Time control utility for timezone management and age/date change detection. |
 | class-kx-Toolbox.php | `Toolbox` | Multi-purpose utility for debug dumps, EPUB conversion, and file saving. |
@@ -198,6 +201,8 @@ The system is highly modularized and controlled by the following class groups:
 
 This project is licensed under the [GNU General Public License v2 or later](https://www.gnu.org/licenses/gpl-2.0.html), consistent with the parent theme.
 
+---
+
 ## Credits
 
 * **Customized by**: [yusuke-kasai-kasouya](https://github.com/yusuke-kasai-kasouya/)
@@ -209,4 +214,4 @@ This project is licensed under the [GNU General Public License v2 or later](http
 
 The author is a native Japanese speaker. While inquiries in English are welcome (via translation tools), communication in Japanese will allow for smoother responses.
 
-> **Note:** This document was prepared with the assistance of AI (Gemini) to accurately reflect the internal code structure.
+> **Note:** This document was prepared with the assistance of AI (Gemini) to accurately reflect the internal code structure. Full-width brackets (`［ ］`) are intentionally used for shortcode representations to prevent unintended evaluation.

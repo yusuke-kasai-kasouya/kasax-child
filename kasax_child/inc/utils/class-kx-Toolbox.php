@@ -843,15 +843,16 @@ class Toolbox {
         $name_parts = [];
         if (!empty($opt['prefix'])) $name_parts[] = $opt['prefix'];
 
+        if ($opt['use_id']) {
+            $id_str = !empty($meta['id']) ? "id：{$meta['id']}" : "id：unknown";
+            $name_parts[] = $id_str;
+        }
+
         if ($opt['use_time']) {
             $datetime = new \DateTime('now', new \DateTimeZone('Asia/Tokyo'));
             $name_parts[] = $datetime->format("Ymd_His");
         }
 
-        if ($opt['use_id']) {
-            $id_str = !empty($meta['id']) ? "id：{$meta['id']}" : "id：unknown";
-            $name_parts[] = $id_str;
-        }
 
         if (!empty($meta['title'])) $name_parts[] = $meta['title'];
 

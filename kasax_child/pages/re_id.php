@@ -1,12 +1,14 @@
 <?php
-//3,4,6,7,8,9,10
+/**
+ * [Path]: pages/re_id.php
+ */
 
 require_once('../../../../wp-load.php');
 global $wpdb;
 
 // デフォルト範囲
 $range_start = 1;
-$range_end = 160;
+$range_end = 699;
 
 // 範囲取得（POST優先）
 if (!empty($_POST['range_start'])) {

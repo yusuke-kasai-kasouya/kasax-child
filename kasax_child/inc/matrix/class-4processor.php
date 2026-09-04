@@ -2,9 +2,6 @@
 /**
  *[Path]: inc/core/matrix/class-orchestrator.php
  */
-
-
-
 namespace Kx\Matrix;
 
 use Kx\Core\SystemConfig as Su;
@@ -20,16 +17,28 @@ use Kx\Core\ContextManager;
 
 
 class Processor {
-    private $collection;
-    private $context;
-    private $atts;
-    private $post_id;
-    private $origin_path;
-    private $virtuals;
+    /** @var array 収集されたデータ群 */
+    private array $collection;
+
+    /** @var string コンテキスト判定結果 */
+    private string $context;
+
+    /** @var array ショートコード属性 */
+    private array $atts;
+
+    /** @var int|string 投稿ID */
+    private $post_id; // もしPHP8.0以降であれば private int|string $post_id; でも可
+
+    /** @var array|null 起点となるパスインデックス */
+    private ?array $origin_path;
+
+    /** @var array|null 仮想階層データ */
+    private ?array $virtuals = null;
+
 
     /**
      * Processor コンストラクタ
-     * * @param array  $collection DataCollectorによって収集された、各IDごとの詳細データ群
+     * @param array  $collection DataCollectorによって収集された、各IDごとの詳細データ群
      * @param string $context    表示コンテキスト (timetable_matrix, vertical_timeline 等)
      * @param array  $atts       ショートコード属性一式（ソート設定や表示オプションを含む）
      */
@@ -285,23 +294,51 @@ class Processor {
             // キャッシュからデータを取得 (shared_date または shared_json)
             // $this->atts['sort'] は 'date' や 'json' が入っている想定
             $raw_data = Dy::get_content_cache($item['id'], 'shared_' . $this->atts['sort']);
+            $has_val = true;
 
             if ($this->atts['sort'] === 'json') {
                 // jsonは文字列なので配列に変換
                 $decoded = json_decode($raw_data, true);
-                // 指定されたキー（where_jsonの第一キー）の値をセット
-                $item['temp_sort_val'] = $decoded[$key] ?? '';
+                $val = $decoded[$key] ?? '';
+                if ($val === null || $val === '') {
+                    $has_val = false;
+                }
+                $item['temp_sort_val'] = $val;
             } elseif ($this->atts['sort'] === 'date') {
                 // dateはbigint(20)なので数値として扱う
-                $item['temp_sort_val'] = !empty($raw_data) ? (int)$raw_data : 0;
+                // 空（0、null、空文字など）の場合は「値なし」と判定
+                if (empty($raw_data)) {
+                    $has_val = false;
+                    $item['temp_sort_val'] = 0;
+                } else {
+                    $item['temp_sort_val'] = (int)$raw_data;
+                }
             } else {
+                if ($raw_data === null || $raw_data === '' || $raw_data === false) {
+                    $has_val = false;
+                }
                 $item['temp_sort_val'] = $raw_data;
             }
+            $item['has_sort_val'] = $has_val;
         }
         unset($item); // 参照渡しを解除
 
         // 3. ソート実行
         usort($items, function($a, $b) use ($order) {
+            $hasA = $a['has_sort_val'] ?? false;
+            $hasB = $b['has_sort_val'] ?? false;
+
+            // どちらか一方のみが「値なし」の場合、値がある方を常に上位（先）に配置する
+            if ($hasA !== $hasB) {
+                return $hasA ? -1 : 1;
+            }
+
+            // 双方が「値なし」の場合は相対順位を維持
+            if (!$hasA && !$hasB) {
+                return 0;
+            }
+
+            // 双方が「値あり」の場合のみ、指定された順序（ASC/DESC）に従って比較
             $valA = $a['temp_sort_val'];
             $valB = $b['temp_sort_val'];
 
@@ -370,7 +407,7 @@ class Processor {
                     $calc_slug = $relative_age . (isset($parts[1]) ? '-' . $parts[1] : '');
                     $parsed = \Kx\Utils\Time::parse_slug($calc_slug, $char_info['root_id']);
                     $grade = $parsed['grade'] ?? '';
-                    $grade_html = "<spna class='kx-age' >{$grade}</span>";
+                    $grade_html = "<span class='kx-age' >{$grade}</span>";
                 }
                 else if( strpos((string)$char_no, '98') === 0){
                     $i++;
@@ -519,6 +556,7 @@ class Processor {
             //'edu_table' => $edu_table
         ];
     }
+
 
     /**
      * タイムスラグをソート・比較用の文字列に正規化

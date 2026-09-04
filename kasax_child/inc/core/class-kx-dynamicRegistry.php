@@ -298,6 +298,16 @@ class DynamicRegistry {
     }
 
     /**
+     * 投稿以下全ての子孫ID配列を取得
+     *
+     * @param int $post_id 投稿ID
+     * @return int[] 全子孫IDの配列
+     */
+    public static function get_descendants_all($post_id) {
+        return DyDomainHandler::get_descendants_all($post_id);
+    }
+
+    /**
      * シリーズと番号からキャラ属性を取得
      *
      * @param string $series シリーズ名

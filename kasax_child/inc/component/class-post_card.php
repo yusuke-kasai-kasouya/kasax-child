@@ -155,7 +155,7 @@ class PostCard {
         $content = apply_filters('the_content', get_the_content(""));
 
         // 旧ロジックの継承：改行削除とトリミング
-        $content = preg_replace("/\r\n|\r|\n/", "", trim($content));
+        //$content = preg_replace("/\r\n|\r|\n/", "", trim($content));
         if (strpos($content, "<br />") === 0) {
             $content = mb_substr($content, 6);
         }

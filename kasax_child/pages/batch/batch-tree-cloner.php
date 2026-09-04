@@ -14,6 +14,9 @@ $ids_count = count($ids_array);
 $source_root_id = $_GET['id_base'] ?? '';
 $source_root_title = get_the_title($source_root_id);
 
+// content初期値：日付。
+$content = '＿' . \Kx\Utils\Time::format() . '＿';
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -72,7 +75,7 @@ $source_root_title = get_the_title($source_root_id);
 
         <div class="input-group">
             <label>3. COMMON CONTENT (複製記事の本文内容)</label>
-            <textarea name="common_content" rows="4" placeholder="一律で入力する内容（空でも可）"></textarea>
+            <textarea name="common_content" rows="4" placeholder="一律で入力する内容（空でも可）"><?= esc_textarea($content) ?></textarea>
         </div>
 
         <div class="item-list">

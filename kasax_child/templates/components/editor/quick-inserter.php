@@ -2,12 +2,34 @@
 /**
  * QuickInserter
  * templates\components\editor\quick-inserter.php
+ *
+ * @var string $class
+ * @var string $paint
+ * @var string $label
+ * @var string $mode
+ * @var array  $title_parts
+ * @var string $last_part
+ * @var string $content
+ * @var int    $parent_id
+ * @var string $genre
  */
+
+// 変数のデフォルト初期化（未定義エラー・赤波線対策）
+$class       = $class ?? '';
+$paint       = $paint ?? '';
+$label       = $label ?? '';
+$mode        = $mode ?? '';
+$title_parts = $title_parts ?? [];
+$last_part   = $last_part ?? '';
+$content     = $content ?? '';
+$parent_id   = $parent_id ?? 0;
+$genre       = $genre ?? '';
+
 $uid = "qi-" . uniqid();
 ?>
 <div id="wrapper-<?= $uid ?>" class="kx-qi-scope" style="display:inline-block; vertical-align: middle;">
-    <button type="button" class="qi-trigger-btn <?= $class ?>"
-            style="<?= $paint ?>"
+    <button type="button" class="qi-trigger-btn <?= esc_attr($class) ?>"
+            style="<?= esc_attr($paint) ?>"
             onclick="if(window.kxToggleQiPanel) kxToggleQiPanel('<?= $uid ?>');">
         <span class="qi-label"><?= esc_html($label) ?></span>
     </button>
@@ -57,6 +79,12 @@ if (!defined('KX_QI_ASSETS_LOADED')):
             }
             $('.qi-floating-panel').not($panel).hide();
             $panel.toggle();
+
+            // 開いた際に最初の入力欄またはテキストエリアにフォーカス
+            if ($panel.is(':visible')) {
+                var $focusTarget = $panel.find('.qi-input-last').length ? $panel.find('.qi-input-last') : $panel.find('.qi-textarea');
+                $focusTarget.focus();
+            }
         };
 
         window.kxSubmitQuickInsert = function(uid, parentId, genre, nonce) {
@@ -112,6 +140,17 @@ if (!defined('KX_QI_ASSETS_LOADED')):
                 if($loader.length) $loader.hide();
             });
         };
+
+        // Ctrl + Return (Enter) ショートカットによる保存処理 (Windows / Linux 対応)
+        $(document).on('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                var $visiblePanel = $('.qi-floating-panel:visible').last();
+                if ($visiblePanel.length) {
+                    e.preventDefault();
+                    $visiblePanel.find('.qi-save-btn').click();
+                }
+            }
+        });
     })(jQuery);
 </script>
 
@@ -155,7 +194,7 @@ if (!defined('KX_QI_ASSETS_LOADED')):
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 5;
+    z-index: 99999;
     width: 800px;
     background: #fff;
     border: 2px solid #333;
@@ -164,7 +203,7 @@ if (!defined('KX_QI_ASSETS_LOADED')):
     color: #333;
 }
 .qi-inner { padding: 15px; }
-.qi-header { font-weight: bold; margin-bottom: 10px; } /* 元コードに近い形を維持 */
+.qi-header { font-weight: bold; margin-bottom: 10px; }
 .qi-title-stack { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
 .qi-part-row { display: flex; align-items: center; gap: 5px; }
 .qi-input-part {
@@ -197,7 +236,6 @@ if (!defined('KX_QI_ASSETS_LOADED')):
 }
 .qi-save-btn { background: #333; color: #fff; border: none; }
 .qi-close-btn { background: #eee; color: #333; border: 1px solid #ccc; }
-
 
 /* ヘッダーバー：ホバー時に周囲を光らせる（青白系） */
 .qi-header:hover {

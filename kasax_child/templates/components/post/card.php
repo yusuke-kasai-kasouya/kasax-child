@@ -15,6 +15,9 @@
  */
 
 use \Kx\Component\Editor;
+use Kx\Core\SystemConfig as Su;
+
+$visual_config = Su::get('visual_config');
 
 $is_blind = ($mode === 'blind');
 if($is_blind) $mode = 'standard';
@@ -23,7 +26,8 @@ $title_style = '';
 
 if( $mode === 'matrix_editor_left' || $mode==='matrix_editor_right'){
     $card_mode = 'standard';
-    $title_style = 'max-width: 200px;';
+    //$title_style = 'max-width: 145px;';
+    $title_style = $visual_config['card']['matrix_editor']['title_style'];
 }else{
     $card_mode = $mode;
 }

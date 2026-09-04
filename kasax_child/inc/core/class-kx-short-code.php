@@ -286,8 +286,15 @@ class ShortCode {
     }
 
     /**
-     * outlineショートコード
-     * 元の装飾と引数を完全に維持したバージョン
+     * [kasax_index] ショートコードによるアウトライン（目次）カードのレンダリング処理。
+     *
+     * @version    0.2026.0903
+     * @updated    2026-09-03
+     * @context    Dy::get_outline に既存スタックが存在する場合に早期 return してショートコードが空出力になる不具合を修正。未解析時のみ analyze_and_inject を呼び出すようガードを修正し、カード描画処理へ正常遷移させる。
+     * @constraint ショートコードの引数シグネチャ（$atts）および OutlineManager::render の呼び出し条件・スタイル定義を破壊せず維持すること。
+     *
+     * @param array|string $atts ショートコード属性配列（'id' => WordPress標準の投稿ID (wp_posts.ID)）
+     * @return string 生成されたアウトラインのHTML文字列（表示データがない、またはID不整合の場合は空文字）
      */
     public static function outline_shortcode($atts) {
         // 1. 引数の処理（$id を確実に取得できるように修正）
@@ -299,25 +306,23 @@ class ShortCode {
 
         if (!$post_id) return '';
 
-        // 2. データの取得と解析（Prefix 'b' を使用）
+        // 2. データの取得と解析（未解析の場合のみ解析を実行する）
         $post = get_post($post_id);
         if (!$post) return '';
 
         $check_dy = Dy::get_outline($post_id);
-        if (!empty($check_dy['stack'])) return;
 
-        $raw_content = $post->post_content;
-
-        // 解析の実行
-        \Kx\Core\OutlineManager::analyze_and_inject($raw_content, $post_id, 'sc');
+        // 【修正点】stack が空の場合のみ解析を実行し、すでに存在する場合はそのまま後続のレンダリングへ進む
+        if (empty($check_dy['stack'])) {
+            $raw_content = $post->post_content;
+            \Kx\Core\OutlineManager::analyze_and_inject($raw_content, $post_id, 'sc');
+        }
 
         // 3. スタイルの再現
         $colormgr = Dy::get_color_mgr($post_id);
 
         // 元の padding: 10px 10px 10px 0.5em; margin: 0 2em; を維持
-        $style = $colormgr['style_array']['outline'] .
-            //"border-left: 4px solid hsla(var(--kx-hue), var(--kx-sat), var(--kx-lum), 0.8); " .
-            //"background: hsla(var(--kx-hue), var(--kx-sat), var(--kx-lum), 0.01); " .
+        $style = ($colormgr['style_array']['outline'] ?? '') .
             "margin:0 2em;".
             "border-right: 1px solid hsla(var(--kx-hue), var(--kx-sat), var(--kx-lum), 0.8); " ;
 
@@ -670,17 +675,33 @@ class ShortCode {
         return $html;
     }
 
-
     /**
      * 指定フォルダ内の全ファイルを統合し、VS Codeリンク付きで出力する
+     *
+     * 統合エンジン（consolidator）から呼び出された場合は、目次やHTMLタグを排除した
+     * テキストデータのみを結合して返します。その際、merge_styleが'separated'に
+     * 設定されていれば、ファイル境界にマークダウンの##（ファイル名）見出しを自動挿入します。
+     *
+     * @param array|string $atts {
+     *     ショートコードの属性配列。
+     *
+     *     @type string $folder      対象フォルダ名。デフォルトは 'test'。
+     *     @type string $path        ベースディレクトリ解決用のパスキー。デフォルトは 'dir_E_web_novel'。
+     *     @type string $ext         検索対象ファイルの拡張子。デフォルトは 'md'。
+     *     @type string $code        ファイルの文字コード。デフォルトは 'auto'。
+     *     @type string $type        呼び出しタイプ。'consolidator' 指定時はRAWデータ結合のみを行う。
+     *     @type string $merge_style 結合スタイル。'separated' で境界に見出しを挿入。デフォルトは 'simple'（そのまま結合）。
+     * }
+     * @return string レンダリング用HTML、または結合されたプレーンテキスト。
      */
     public static function get_text_files_in_folder($atts) {
         $options = shortcode_atts([
-            'folder' => 'test',
-            'path'   => 'dir_E_web_novel',
-            'ext'    => 'md',
-            'code'   => 'auto', // 文字コード指定を追加
-            'type'   => ''
+            'folder'      => 'test',
+            'path'        => 'dir_E_web_novel',
+            'ext'         => 'md',
+            'code'        => 'auto', // 文字コード指定
+            'type'        => '',
+            'merge_style' => 'simple' // 統合時のマージスタイルを追加 (simple | separated)
         ], $atts);
 
         $base_dir = Su::get_path($options['path']);
@@ -725,14 +746,11 @@ class ShortCode {
             // リストのリンクをアンカー(#)からVSCリンクへ変更
             $navigation .= "<li style='margin-bottom:8px; display:flex; align-items:center;'>";
             $navigation .= "📄 <a href='{$vsc_link}' title='Edit in VS Code' style='color:#4daafc; text-decoration:none; margin-left:8px; border-bottom:1px solid transparent;' onmouseover=\"this.style.borderBottom='1px solid #4daafc'\" onmouseout=\"this.style.borderBottom='1px solid transparent'\">" . esc_html($file_name) . "</a>";
-            // ページ内アンカーへのリンクも一応残したい場合は、小さなアイコン等で横に添えることも可能です
             $navigation .= " <a href='#{$anchor_id}' title='Jump to Preview below' style='margin-left:auto; text-decoration:none; font-size:0.8em; color:#666;'>[Preview ↓]</a>";
             $navigation .= "</li>";
 
 
-
-            if( $options['type'] === 'consolidator'){
-                // 第3引数を true にする、または専用の raw 取得関数を使う
+            if ($options['type'] === 'consolidator') {
                 $raw = file_get_contents($file_path);
 
                 // 文字コード変換（既存の code オプションを尊重）
@@ -740,17 +758,15 @@ class ShortCode {
                     $raw = mb_convert_encoding($raw, 'UTF-8', $options['code']);
                 }
 
-                $combined_content .= $raw . "\n";
+                // 修正：merge_styleが'separated'の場合、ファイル境界に見出しヘッダーを挿入
+                if ($options['merge_style'] === 'separated') {
+                    $combined_content .= "\n\n## " . $file_name . "\n" . $raw . "\n";
+                } else {
+                    $combined_content .= $raw . "\n";
+                }
                 continue;
             }
 
-            /*
-            if( $options['type'] === 'consolidator'){
-                $combined_content .= self::render_file_content_core($file_path, $options['code'], false);
-                $combined_content .= "\n";
-                continue;
-            }
-            */
 
             // 2. 本文統合（セクション区切りをダークに）
             $combined_content .= "<section id='{$anchor_id}' style='margin-top:60px; border-top:1px solid #444; padding-top:30px;'>";
@@ -772,11 +788,9 @@ class ShortCode {
             return $navigation;
         }
 
-        if( $options['type'] === 'consolidator'){
+        if ($options['type'] === 'consolidator') {
             $total_html = $combined_content;
-            $total_html = $combined_content;
-
-        }else{
+        } else {
             $total_html = $navigation . $combined_content;
         }
 

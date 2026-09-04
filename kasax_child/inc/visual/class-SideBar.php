@@ -77,7 +77,7 @@ class SideBar {
         );
 
         $ai_score = round( Dy::get_content_cache($post_id, 'ai_score_deviation'))?? 'N/A';
-        $ai_score_text = '：'. $ai_score;
+        //$ai_score_text = '：'. $ai_score;
 
         // 2. パネル共通のデータ構造定義 (LLMが理解しやすい命名)
         $sidebar_config = [
@@ -85,7 +85,7 @@ class SideBar {
             'panels'     => [
                 'right' => [
                     'dom_id'         => 'kx-sidebar-right',
-                    'title'          => ($path_index['genre'] ?? '').$ai_score_text,
+                    'title'          => ($path_index['genre'] ?? ''),//.$ai_score_text,
                     'accent_color'   => '#00ffcc',
                     'header_content' => $content['header_content'], // 15%領域：クイック操作等
                     'body_content'   => $content['body_content'], // 70%領域：ログスタック

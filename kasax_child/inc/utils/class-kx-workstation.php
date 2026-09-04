@@ -118,6 +118,14 @@ class WorkStation {
         $prod_works = Su::get('identifier_schema')['common_prefixes']['work_a'] ?? [];
         $blueprint  = [];
 
+         // --- 0. バッチ操作パネル (一番上に配置) ---
+        $blueprint['BATCH'] = [
+            'content_type' => 'function',
+            'title'        => '',
+            'use_outline'  => false,
+            'callback'     => [self::class, 'render_batch_panel'],
+        ];
+
         // --- 1. WORKセクション ---
         foreach ($prod_works as $work_key) {
             $uc_work = ucfirst($work_key);
@@ -191,6 +199,25 @@ class WorkStation {
                 'mode' => 'link',
                 'ids'  => Dy::get_descendants(self::$host_id), // 子孫を注入
             ],
+        ];
+
+        $blueprint["ADD"] = [
+                'content_type' => 'inserter',
+                'title'        => "ADD", // これだけ残す
+                'use_outline'  => true,
+                'args'         => [
+                    'title'   => "{$cat_name}≫X構成",
+                    'content' => '[raretu]',
+                    'label'   => "NEW＋",
+                ],
+            ];
+
+        // --- 4. バッチ操作パネル (新規追加) ---
+        $blueprint['BATCH'] = [
+            'content_type' => 'function',
+            'title'        => '',
+            'use_outline'  => false,
+            'callback'     => [self::class, 'render_batch_panel'],
         ];
 
         return $blueprint;
@@ -285,5 +312,34 @@ class WorkStation {
             }
         }
         return false;
+    }
+
+    /**
+     * バッチ操作パネル (matrix-batch-title.php) のレンダリング
+     */
+    private static function render_batch_panel(): string {
+        if (empty(self::$host_id)) return '';
+
+        // 直下または子孫のIDリストを取得
+        $descendant_ids = Dy::get_content_cache(self::$host_id, 'descendants')
+                       ?: Dy::get_descendants(self::$host_id)
+                       ?: [];
+
+        // matrix-batch-title.php が期待する配列構造を構築
+        $items = array_map(function($id) {
+            return ['id' => $id];
+        }, $descendant_ids);
+
+        $matrix_data = [
+            'post_id' => self::$host_id,
+            'items'   => $items
+        ];
+
+        // テンプレートの読み込みとレンダリング
+        return \Kx\Utils\KxTemplate::get(
+            'matrix/matrix-batch-title',
+            ['matrix' => $matrix_data],
+            false
+        );
     }
 }

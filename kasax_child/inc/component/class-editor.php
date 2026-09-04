@@ -1,6 +1,6 @@
 <?php
 /**
- * [Path]: inc\component\class-post_card.php
+ * [Path]: inc\component\class-editor.php
  */
 namespace Kx\Component;
 
@@ -8,7 +8,6 @@ namespace Kx\Component;
 use Kx\Core\DynamicRegistry as Dy;
 //use Kx\Core\ColorManager;
 use Kx\Utils\KxTemplate;
-
 
 
 class Editor {
@@ -46,7 +45,7 @@ class Editor {
             $ghost_args['edit_id']    = $post_id;
             $ghost_args['editor_mode'] = ($editor_mode === 'overview')?'ghost': $editor_mode ;
             $ghost_args['label']       = '👻';
-            //$ghost_args['editor_mode'] = 'ghost';
+            $ghost_args['layout_mode'] = $editor_mode;
 
             // 【重要】DOM IDの衝突を避けるための識別子(uidはテンプレート内で$post_id依存のため)
             // 必要に応じて $ghost_args['suffix'] = '-ghost'; のように渡すとより安全です
@@ -87,10 +86,14 @@ class Editor {
     /**
      * 更新用の引数組み立て（内部処理）
      *
-     * @param int    $post_id
-     * @param string $editor_mode
-     * @param string $label
-     * @param array  $options
+     * @version 0.2026.0904
+     * @updated 2026-09-04
+     * @context エディタINFO内に初回投稿日時および最新更新日時の表示要素を追加
+     * @constraint 既存のテンプレート引数キーおよびインターフェースを完全維持すること
+     * @param int    $post_id     WP標準のPostID
+     * @param string $editor_mode エディタ動作モード
+     * @param string $label       ボタン表示ラベル
+     * @param array  $options     追加オプション配列
      * @return array テンプレートに渡す引数配列
      */
     private static function prepareUpdateArgs($post_id, $editor_mode, $label, $options) {
@@ -149,12 +152,21 @@ class Editor {
             $label .= '&nbsp;&nbsp;T';
         }
 
+        // 4. --- 投稿日時・更新日時の構築 ---
+        $target_path_index = ($link_id === $post_id) ? $path_index : (Dy::get_path_index($link_id) ?? []);
+        $post_date_raw     = $target_path_index['post_date'] ?? null;
+        $modified_raw      = $target_path_index['modified'] ?? null;
 
+        $post_date_formatted = $post_date_raw ? date('Y-m-d H:i', strtotime($post_date_raw)) : '-';
+        $modified_formatted  = $modified_raw ? date('Y-m-d H:i', strtotime($modified_raw)) : '-';
+
+        $info_links[] = "<span class='ed-info-dates' style='font-size: 11px; color: #ccc;'>投稿：{$post_date_formatted}&nbsp;&nbsp;→&nbsp;&nbsp;更新：{$modified_formatted}</span>";
 
         return [
             'post_id'     => $post_id,
             'edit_id'     => $edit_id,
             'editor_mode' => $editor_mode,
+            'layout_mode' => $esc_editor_mode,
             'title'       => $options['new_title'] ?? ($path_index['full'] ?? ''),
             'new_content' => $options['new_content'] ?? '',
             'label'       => $label,
